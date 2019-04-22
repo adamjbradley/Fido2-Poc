@@ -121,14 +121,13 @@
             }
 
             var credentialsAsJson = publicKeyCredentialToJSON(credentials);
-
             $.ajax({
                 url: 'http://localhost:5000/AccountAPI/RegisterCallback',
                 type: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify(credentialsAsJson),
-                success: function () {
-                    //Do something here
+                success: function (result) {
+                    console.log(result);
                 }
             });
         });</script>

@@ -87,7 +87,7 @@ namespace ScottBrady91.Fido2.Poc.Controllers
         }
 
         [HttpPost("/AccountAPI/LoginCallback")]
-        public ActionResult<RequestResult> LoginCallback([FromForm] CredentialsModel model)
+        public ActionResult<RequestResult> LoginCallback([FromBody] CredentialsModel model)
         {
             // 1. If the allowCredentials option was given when this authentication ceremony was initiated, verify that credential.id identifies one of the public key credentials that were listed in allowCredentials.
             var data = tempData.LoadTempData(HttpContext);
@@ -187,6 +187,7 @@ namespace ScottBrady91.Fido2.Poc.Controllers
 
                     //Return signed JWT
                     rr.Success = true;
+                    return rr;
                 }
 
                 throw new Exception("Possible cloned authenticator");
@@ -233,7 +234,6 @@ namespace ScottBrady91.Fido2.Poc.Controllers
             Array.Copy(input, 1, output, 0, output.Length);
             return output;
         }
-
 
         [HttpPost("/AccountAPI/RegisterCallback")]
         public ActionResult<RequestResult> RegisterCallback([FromBody] CredentialsModel model)

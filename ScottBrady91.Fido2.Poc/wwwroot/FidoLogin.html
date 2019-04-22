@@ -99,7 +99,7 @@
         ];
 
         // Relying party details
-        var rpId = "localhost";
+        var rpId = json.relyingPartyId;
 
         var publicKey = { challenge, allowCredentials, rpId };
 
@@ -130,9 +130,19 @@
 
                 return pubKeyCred;
             }
-            jQuery(function ($) {
-                $.redirect("/Account/LoginCallback", publicKeyCredentialToJSON(credentials), "POST");
+
+
+            var credentialsAsJson = publicKeyCredentialToJSON(credentials);
+            $.ajax({
+                url: 'http://localhost:5000/AccountAPI/LoginCallback',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(credentialsAsJson),
+                success: function (result) {
+                    console.log(result);
+                }
             });
+
         });</script>
 
 </body>
