@@ -130,8 +130,7 @@
 
                 return pubKeyCred;
             }
-
-
+            
             var credentialsAsJson = publicKeyCredentialToJSON(credentials);
             $.ajax({
                 url: 'http://localhost:5000/AccountAPI/LoginCallback',

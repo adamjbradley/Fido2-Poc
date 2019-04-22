@@ -45,11 +45,11 @@ namespace ScottBrady91.Fido2.Poc.Controllers
         public ActionResult<Register> FidoRegister([FromQuery] string Username)
         {
             // generate challenge
-            var challenge = CryptoRandom.CreateRandomKeyString(16);
+            var challenge = CryptoRandom.CreateUniqueId(16);
 
             // store challenge for later use
             tempData.SaveTempData(HttpContext, new Dictionary<string, object> { { "challenge", challenge }, { "username", Username } });
-            cache.Set(Username, new Dictionary<string, object> { { "challenge", challenge }, { "username", Username } });
+            cache.Set(challenge, new Dictionary<string, object> { { "challenge", challenge }, { "username", Username } });
 
             var rvm = new Register();
             rvm.Username = Username;
@@ -58,30 +58,171 @@ namespace ScottBrady91.Fido2.Poc.Controllers
             return rvm;
         }
 
+        [HttpPost("/AccountAPI/RegisterCallback")]
+        public ActionResult<RequestResult> RegisterCallback([FromBody] CredentialsModel model)
+        {
+            // 1. Let JSONtext be the result of running UTF-8 decode on the value of response.clientDataJSON
+            var jsonText = Encoding.UTF8.GetString(Base64Url.Decode(model.Response.ClientDataJson));
+
+            // 2. Let C, the client data claimed as collected during the credential creation, be the result of running an implementation-specific JSON parser on JSONtext
+            var c = JsonConvert.DeserializeObject<ClientData>(jsonText);
+
+            // 3. Verify that the value of C.type is webauthn.create
+            if (c.Type != "webauthn.create") throw new Exception("Incorrect client data type");
+
+            // 4. Verify that the value of C.challenge matches the challenge that was sent to the authenticator in the create() call.
+            //var data = tempData.LoadTempData(HttpContext);
+            Dictionary<string, object> data = (Dictionary<string, object>)cache.Get(c.Challenge);
+
+            var challenge = (string)data["challenge"];
+            if (Base64Url.Decode(c.Challenge) == Convert.FromBase64String(challenge)) throw new Exception("Incorrect challenge");
+
+            // 5. Verify that the value of C.origin matches the Relying Party's origin.
+            if (c.Origin != "http://localhost:5000") throw new Exception("Incorrect origin");
+
+            // 6. Verify that the value of C.tokenBinding.status matches the state of Token Binding for the TLS connection over which the assertion was obtained.
+            // If Token Binding was used on that TLS connection, also verify that C.tokenBinding.id matches the base64url encoding of the Token Binding ID for the connection.
+            // TODO: Token binding (once out of draft)
+
+            // 7. Compute the hash of response.clientDataJSON using SHA-256.
+            var hasher = new SHA256Managed();
+            var hashedClientDataJson = hasher.ComputeHash(Base64Url.Decode(model.Response.ClientDataJson)); // Why???
+
+            // 8. Perform CBOR decoding on the attestationObject field of the AuthenticatorAttestationResponse structure
+            // to obtain the attestation statement format fmt, the authenticator data authData, and the attestation statement attStmt.
+            CBORObject cbor;
+            using (var stream = new MemoryStream(Base64Url.Decode(model.Response.AttestationObject)))
+                cbor = CBORObject.Read(stream);
+
+            var authData = cbor["authData"].GetByteString();
+            var fmt = cbor["fmt"].AsString();
+
+            var span = authData.AsSpan();
+            var rpIdHash = span.Slice(0, 32); span = span.Slice(32);
+
+            var flags = new BitArray(span.Slice(0, 1).ToArray()); span = span.Slice(1);
+            var userPresent = flags[0]; // (UP)
+            // Bit 1 reserved for future use (RFU1)
+            var userVerified = flags[2]; // (UV)
+            // Bits 3-5 reserved for future use (RFU2)
+            var attestedCredentialData = flags[6]; // (AT) "Indicates whether the authenticator added attested credential data"
+            var extensionDataIncluded = flags[7]; // (ED)
+
+            // Signature counter (4 bytes, big-endian unint32)
+            var counterBuf = span.Slice(0, 4); span = span.Slice(4);
+            var counter = BitConverter.ToUInt32(counterBuf); // https://www.w3.org/TR/webauthn/#signature-counter
+
+            // Attested Credential Data
+            // cred data - AAGUID (16 bytes)
+            var aaguid = span.Slice(0, 16); span = span.Slice(16);
+
+            // cred data - L (2 bytes, big-endian uint16)
+            var credIdLenBuf = span.Slice(0, 2); span = span.Slice(2);
+            credIdLenBuf.Reverse();
+            var credentialIdLength = BitConverter.ToUInt16(credIdLenBuf);
+
+            // cred data - Credential ID (L bytes)
+            var credentialId = span.Slice(0, credentialIdLength); span = span.Slice(credentialIdLength);
+
+            // 9. Verify that the RP ID hash in authData is indeed the SHA-256 hash of the RP ID expected by the RP.
+            var computedRpIdHash = hasher.ComputeHash(Encoding.UTF8.GetBytes(RelyingPartyId));
+            if (!rpIdHash.SequenceEqual(computedRpIdHash)) throw new Exception("Incorrect RP ID");
+
+            // 10. If user verification is required for this registration, verify that the User Verified bit of the flags in authData is set.
+            // TODO: Handle user verificaton required
+
+            // 11. If user verification is not required for this registration, verify that the User Present bit of the flags in authData is set.
+            if (userPresent == false) throw new Exception("User not present");
+
+            // 12. Verify that the values of the client extension outputs in clientExtensionResults
+            // TODO: Handle extension results
+
+            // 13. Determine the attestation statement format by performing a USASCII case-sensitive match on fmt against the set of supported WebAuthn Attestation Statement Format Identifier values
+            // TODO: Handle accepted fmt values
+
+            // 14. Verify that attStmt is a correct attestation statement, conveying a valid attestation signature, by using the attestation statement format fmt’s verification procedure given attStmt, authData and the hash of the serialized client data computed in step 7.
+            // TODO: Handle fmt specific attestation statement
+
+            // 15. If validation is successful, obtain a list of acceptable trust anchors (attestation root certificates or ECDAA-Issuer public keys) for that attestation type and attestation statement format fmt, from a trusted source or from policy.
+            // For example, the FIDO Metadata Service [FIDOMetadataService] provides one way to obtain such information, using the aaguid in the attestedCredentialData in authData.
+            // 16. Assess the attestation trustworthiness using the outputs of the verification procedure in step 14
+            // TODO: Use of FIDO metadata service
+
+            // 17. Check that the credentialId is not yet registered to any other user & 
+            var parsedCredentialId = Convert.ToBase64String(credentialId.ToArray());
+
+            var rr = new RequestResult();
+
+            /*
+            if (Users.Any(x => x.CredentialId == parsedCredentialId))
+            {
+                {
+                    rr.Success = true;
+                    rr.ErrorMessage = "User already registered";
+                    return rr;
+                }
+            }
+            */
+
+            List<User> _Users = (List<User>)cache.Get("Users");
+            if (_Users != null) 
+            {
+                if (_Users.Any(x => x.CredentialId == parsedCredentialId))
+                {
+                    {
+                        rr.Success = true;
+                        rr.ErrorMessage = "User already registered";
+                        return rr;
+                    }
+                }
+            }
+
+            // 18. If the attestation statement attStmt verified successfully and is found to be trustworthy, then register the new credential
+            var coseStruct = CBORObject.DecodeFromBytes(span.ToArray());
+            var key = JsonConvert.DeserializeObject<CredentialPublicKey>(coseStruct.ToJSONString());
+
+            Models.User user = new User { Username = (string)data["username"], CredentialId = parsedCredentialId, PublicKey = key };
+            Users.Add(user);
+            cache.Set("Users", Users);
+
+            rr.Success = true;
+            rr.ErrorMessage = null;
+            return rr;
+        }
+
+
         [HttpGet("GetUser/{username}")]
         public ActionResult<User> GetUser([FromQuery] string Username)
         {
+            /*
             var data = tempData.LoadTempData(HttpContext);
             if (Users.Any(x => x.Username == Username))
             {
                 return Users.Find(x => x.Username == Username);
             }
-            else
-                return null;
+            */
+
+            List<User> _Users = (List<User>)cache.Get("Users");
+            if (Users.Any(x => x.Username == Username))
+            {
+                return _Users.Find(x => x.Username == Username);
+            }
+
+            return null;
         }
 
         [HttpPost("/AccountAPI/FidoLogin")]
         public ActionResult<FidoLoginModel> FidoLogin([FromBody] UsernameModel model)
         {
             // generate challenge
-            var challenge = CryptoRandom.CreateRandomKeyString(16);
+            var challenge = CryptoRandom.CreateUniqueId(16);
 
-            var data = tempData.LoadTempData(HttpContext);
+            List<User> _Users = (List<User>)cache.Get("Users");
             var user = Users.First(x => x.Username == model.Username);
 
             // store challenge & key ID for later use
-            tempData.SaveTempData(HttpContext,
-                new Dictionary<string, object> { { "challenge", challenge }, { "keyId", user.CredentialId }, { "returnUrl", model.ReturnUrl } });
+            tempData.SaveTempData(HttpContext, new Dictionary<string, object> { { "challenge", challenge }, { "keyId", user.CredentialId }, { "returnUrl", model.ReturnUrl } });
+            cache.Set(challenge, new Dictionary<string, object> { { "challenge", challenge }, { "keyId", user.CredentialId }, { "returnUrl", model.ReturnUrl } });
 
             return new FidoLoginModel { KeyId = user.CredentialId, Challenge = challenge, RelyingPartyId = RelyingPartyId };
         }
@@ -90,13 +231,10 @@ namespace ScottBrady91.Fido2.Poc.Controllers
         public ActionResult<RequestResult> LoginCallback([FromBody] CredentialsModel model)
         {
             // 1. If the allowCredentials option was given when this authentication ceremony was initiated, verify that credential.id identifies one of the public key credentials that were listed in allowCredentials.
-            var data = tempData.LoadTempData(HttpContext);
-            if ((string)data["keyId"] != model.RawId) throw new Exception("Incorrect key used");
+            //var data = tempData.LoadTempData(HttpContext);
 
             // 2. If credential.response.userHandle is present, verify that the user identified by this value is the owner of the public key credential identified by credential.id.
             // 3. Using credential’s id attribute (or the corresponding rawId, if base64url encoding is inappropriate for your use case), look up the corresponding credential public key.
-            var user = Users.First(x => x.CredentialId == model.RawId);
-            if (!string.IsNullOrEmpty(model.Response.UserHandle) && model.Response.UserHandle != user.Username) throw new Exception("Incorrect user handle returned");
 
             // 4. Let cData, aData and sig denote the value of credential’s response's clientDataJSON, authenticatorData, and signature respectively.
             var cData = model.Response.ClientDataJson;
@@ -108,6 +246,13 @@ namespace ScottBrady91.Fido2.Poc.Controllers
 
             // 6. Let C, the client data claimed as used for the signature, be the result of running an implementation-specific JSON parser on JSONtext.
             var c = JsonConvert.DeserializeObject<ClientData>(jsonText);
+
+            Dictionary<string, object> data = (Dictionary<string, object>)cache.Get(c.Challenge);
+            if ((string)data["keyId"] != model.RawId) throw new Exception("Incorrect key used");
+
+            List<User> _Users = (List<User>)cache.Get("Users");
+            var user = Users.First(x => x.CredentialId == model.RawId);
+            if (!string.IsNullOrEmpty(model.Response.UserHandle) && model.Response.UserHandle != user.Username) throw new Exception("Incorrect user handle returned");
 
             // 7. Verify that the value of C.type is the string webauthn.get.
             if (c.Type != "webauthn.get") throw new Exception("Incorrect client data type");
@@ -235,120 +380,5 @@ namespace ScottBrady91.Fido2.Poc.Controllers
             return output;
         }
 
-        [HttpPost("/AccountAPI/RegisterCallback")]
-        public ActionResult<RequestResult> RegisterCallback([FromBody] CredentialsModel model)
-        {        
-            // 1. Let JSONtext be the result of running UTF-8 decode on the value of response.clientDataJSON
-            var jsonText = Encoding.UTF8.GetString(Base64Url.Decode(model.Response.ClientDataJson));
-
-            // 2. Let C, the client data claimed as collected during the credential creation, be the result of running an implementation-specific JSON parser on JSONtext
-            var c = JsonConvert.DeserializeObject<ClientData>(jsonText);
-
-            // 3. Verify that the value of C.type is webauthn.create
-            if (c.Type != "webauthn.create") throw new Exception("Incorrect client data type");
-
-            // 4. Verify that the value of C.challenge matches the challenge that was sent to the authenticator in the create() call.
-            var data = tempData.LoadTempData(HttpContext);
-            var data1 = cache.Get(HttpContext);
-
-            var challenge = (string)data["challenge"];
-            if (Base64Url.Decode(c.Challenge) == Convert.FromBase64String(challenge)) throw new Exception("Incorrect challenge");
-
-            // 5. Verify that the value of C.origin matches the Relying Party's origin.
-            if (c.Origin != "http://localhost:5000") throw new Exception("Incorrect origin");
-
-            // 6. Verify that the value of C.tokenBinding.status matches the state of Token Binding for the TLS connection over which the assertion was obtained.
-            // If Token Binding was used on that TLS connection, also verify that C.tokenBinding.id matches the base64url encoding of the Token Binding ID for the connection.
-            // TODO: Token binding (once out of draft)
-
-            // 7. Compute the hash of response.clientDataJSON using SHA-256.
-            var hasher = new SHA256Managed();
-            var hashedClientDataJson = hasher.ComputeHash(Base64Url.Decode(model.Response.ClientDataJson)); // Why???
-
-            // 8. Perform CBOR decoding on the attestationObject field of the AuthenticatorAttestationResponse structure
-            // to obtain the attestation statement format fmt, the authenticator data authData, and the attestation statement attStmt.
-            CBORObject cbor;
-            using (var stream = new MemoryStream(Base64Url.Decode(model.Response.AttestationObject)))
-                cbor = CBORObject.Read(stream);
-
-            var authData = cbor["authData"].GetByteString();
-            var fmt = cbor["fmt"].AsString();
-
-            var span = authData.AsSpan();
-            var rpIdHash = span.Slice(0, 32); span = span.Slice(32);
-
-            var flags = new BitArray(span.Slice(0, 1).ToArray()); span = span.Slice(1);
-            var userPresent = flags[0]; // (UP)
-            // Bit 1 reserved for future use (RFU1)
-            var userVerified = flags[2]; // (UV)
-            // Bits 3-5 reserved for future use (RFU2)
-            var attestedCredentialData = flags[6]; // (AT) "Indicates whether the authenticator added attested credential data"
-            var extensionDataIncluded = flags[7]; // (ED)
-
-            // Signature counter (4 bytes, big-endian unint32)
-            var counterBuf = span.Slice(0, 4); span = span.Slice(4);
-            var counter = BitConverter.ToUInt32(counterBuf); // https://www.w3.org/TR/webauthn/#signature-counter
-
-            // Attested Credential Data
-            // cred data - AAGUID (16 bytes)
-            var aaguid = span.Slice(0, 16); span = span.Slice(16);
-
-            // cred data - L (2 bytes, big-endian uint16)
-            var credIdLenBuf = span.Slice(0, 2); span = span.Slice(2);
-            credIdLenBuf.Reverse();
-            var credentialIdLength = BitConverter.ToUInt16(credIdLenBuf);
-
-            // cred data - Credential ID (L bytes)
-            var credentialId = span.Slice(0, credentialIdLength); span = span.Slice(credentialIdLength);
-
-            // 9. Verify that the RP ID hash in authData is indeed the SHA-256 hash of the RP ID expected by the RP.
-            var computedRpIdHash = hasher.ComputeHash(Encoding.UTF8.GetBytes(RelyingPartyId));
-            if (!rpIdHash.SequenceEqual(computedRpIdHash)) throw new Exception("Incorrect RP ID");
-
-            // 10. If user verification is required for this registration, verify that the User Verified bit of the flags in authData is set.
-            // TODO: Handle user verificaton required
-
-            // 11. If user verification is not required for this registration, verify that the User Present bit of the flags in authData is set.
-            if (userPresent == false) throw new Exception("User not present");
-
-            // 12. Verify that the values of the client extension outputs in clientExtensionResults
-            // TODO: Handle extension results
-
-            // 13. Determine the attestation statement format by performing a USASCII case-sensitive match on fmt against the set of supported WebAuthn Attestation Statement Format Identifier values
-            // TODO: Handle accepted fmt values
-
-            // 14. Verify that attStmt is a correct attestation statement, conveying a valid attestation signature, by using the attestation statement format fmt’s verification procedure given attStmt, authData and the hash of the serialized client data computed in step 7.
-            // TODO: Handle fmt specific attestation statement
-
-            // 15. If validation is successful, obtain a list of acceptable trust anchors (attestation root certificates or ECDAA-Issuer public keys) for that attestation type and attestation statement format fmt, from a trusted source or from policy.
-            // For example, the FIDO Metadata Service [FIDOMetadataService] provides one way to obtain such information, using the aaguid in the attestedCredentialData in authData.
-            // 16. Assess the attestation trustworthiness using the outputs of the verification procedure in step 14
-            // TODO: Use of FIDO metadata service
-
-            // 17. Check that the credentialId is not yet registered to any other user & 
-            var parsedCredentialId = Convert.ToBase64String(credentialId.ToArray());
-
-            var rr = new RequestResult();
-            if (Users.Any(x => x.CredentialId == parsedCredentialId))
-            {
-                {
-                    rr.Success = true;
-                    rr.ErrorMessage = "User already registered";
-                    return rr;
-                }
-            }
-
-            // 18. If the attestation statement attStmt verified successfully and is found to be trustworthy, then register the new credential
-            var coseStruct = CBORObject.DecodeFromBytes(span.ToArray());
-            var key = JsonConvert.DeserializeObject<CredentialPublicKey>(coseStruct.ToJSONString());
-
-            Models.User user = new User { Username = (string)data["username"], CredentialId = parsedCredentialId, PublicKey = key };
-            Users.Add(user);
-            cache.Set(user.Username, user);
-
-            rr.Success = true;
-            rr.ErrorMessage = null;
-            return rr;
-        }                             
-    }
+   }
 }
