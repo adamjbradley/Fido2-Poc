@@ -11,9 +11,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Remove="wwwroot\FidoRegister.html" />
+  </ItemGroup>
+  <ItemGroup>
     <Content Update="Views\Account\FidoLogin.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="wwwroot\FidoRegister.html" />
+  </ItemGroup>
 </Project>

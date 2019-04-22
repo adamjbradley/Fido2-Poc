@@ -1,0 +1,137 @@
+﻿
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title> - ScottBrady91.Fido2.Poc</title>
+
+    <link rel="stylesheet" href="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/css/site.min.css?v=kHvJwvVAK1eJLN4w8xygUR3nbvlLmRwi5yr-OuAO90E" />
+</head>
+<body>
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/">ScottBrady91.Fido2.Poc</a>
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/Account/Register">Register</a></li>
+                    <li><a href="/Home/Protected">Protected</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container body-content">
+
+        <h1>Register</h1>
+
+        <p>Please use your FIDO authenticator...</p>
+
+
+        <hr />
+        <footer>
+            <p>&copy; 2018 - Scott Brady</p>
+        </footer>
+    </div>
+
+    <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.3.1.min.js" crossorigin="anonymous" integrity="sha384-tsQFqpEReu7ZLhBV2VZlAu7zcOV+rXbYlF2cqB8txI/8aZajjp4Bqd+V6D5IgvKT"></script>
+    <script src="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/bootstrap.min.js" crossorigin="anonymous" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"></script>
+
+
+    <script>// Update challenge string to expected Uint8Array
+
+        var json = null;
+        jQuery.ajax({
+            url: 'http://localhost:5000/api/AccountAPI/FidoRegister?username=ajb',
+            success: function (result) {
+                if (result.isOk == false) alert(result.message);
+                var stringified = JSON.stringify(result);
+                json = JSON.parse(stringified);
+            },
+            async: false
+        });
+
+        var byteCharacters = atob(json.challenge);
+        var byteNumbers = new Array(byteCharacters.length);
+        for (var i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        var challenge = new Uint8Array(byteNumbers);
+
+        // Request ES256 algorithm
+        var pubKeyCredParams = [
+            {
+                type: "public-key",
+                alg: -7
+            }
+        ];
+
+        // Relying party details
+        var rp = {
+            name: "Test Site",
+            id: json.relyingPartyId
+        };
+
+        // User handle
+        var user = {
+            name: json.username,
+            displayName: json.username,
+            id: new TextEncoder("utf-8").encode(json.username)
+        };
+
+        var publicKey = { challenge, pubKeyCredParams, rp, user };
+
+        navigator.credentials.create({ publicKey }).then((credentials) => {
+            console.log(credentials);
+
+            var publicKeyCredentialToJSON = (pubKeyCred) => {
+                if (pubKeyCred instanceof Array) {
+                    let arr = [];
+                    for (let i of pubKeyCred)
+                        arr.push(publicKeyCredentialToJSON(i));
+
+                    return arr;
+                }
+
+                if (pubKeyCred instanceof ArrayBuffer) {
+                    return btoa(String.fromCharCode.apply(null, new Uint8Array(pubKeyCred)));
+                }
+
+                if (pubKeyCred instanceof Object) {
+                    let obj = {};
+
+                    for (let key in pubKeyCred) {
+                        obj[key] = publicKeyCredentialToJSON(pubKeyCred[key]);
+                    }
+
+                    return obj;
+                }
+
+                return pubKeyCred;
+            }
+
+            var credentialsAsJson = publicKeyCredentialToJSON(credentials);
+
+            $.ajax({
+                url: 'http://localhost:5000/AccountAPI/RegisterCallback',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(credentialsAsJson),
+                success: function () {
+                    //Do something here
+                }
+            });
+        });</script>
+
+</body>
+</html>
