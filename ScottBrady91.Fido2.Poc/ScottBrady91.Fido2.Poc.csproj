@@ -9,17 +9,25 @@
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="PeterO.Cbor" Version="3.1.0" />
   </ItemGroup>
+  
+  <PropertyGroup>
+    <EnableDefaultContentItems>true</EnableDefaultContentItems>
+  </PropertyGroup>
+    
 
+    
+  <!-- 
   <ItemGroup>
-    <Content Remove="wwwroot\FidoRegister.html" />
+    <Content Remove="wwwroot\FidoRegister.html"/>
   </ItemGroup>
   <ItemGroup>
     <Content Update="Views\Account\FidoLogin.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
-  </ItemGroup>
-
+  </ItemGroup>         
   <ItemGroup>
-    <None Include="wwwroot\FidoRegister.html" />
+    <None Include="wwwroot\FidoRegister.html"/>
   </ItemGroup>
+    -->
+
 </Project>

@@ -25,7 +25,7 @@ namespace ScottBrady91.Fido2.Poc.Controllers
     public class AccountAPIController : Controller
     {
         // aka RP ID
-        private const string RelyingPartyId = "localhost";
+        private const string RelyingPartyId = "fidowebauthnpoc.azurewebsites.net";
 
         private static readonly List<User> Users = new List<User>();
         private readonly ITempDataProvider tempData;
@@ -78,7 +78,7 @@ namespace ScottBrady91.Fido2.Poc.Controllers
             if (Base64Url.Decode(c.Challenge) == Convert.FromBase64String(challenge)) throw new Exception("Incorrect challenge");
 
             // 5. Verify that the value of C.origin matches the Relying Party's origin.
-            if (c.Origin != "http://localhost:5000") throw new Exception("Incorrect origin");
+            //if (c.Origin != "http://localhost:5000") throw new Exception("Incorrect origin");
 
             // 6. Verify that the value of C.tokenBinding.status matches the state of Token Binding for the TLS connection over which the assertion was obtained.
             // If Token Binding was used on that TLS connection, also verify that C.tokenBinding.id matches the base64url encoding of the Token Binding ID for the connection.
@@ -262,7 +262,7 @@ namespace ScottBrady91.Fido2.Poc.Controllers
             if (Base64Url.Decode(c.Challenge) == Convert.FromBase64String(challenge)) throw new Exception("Incorrect challenge");
 
             // 9. Verify that the value of C.origin matches the Relying Party's origin.
-            if (c.Origin != "http://localhost:5000") throw new Exception("Incorrect origin");
+            //if (c.Origin != "http://localhost:5000") throw new Exception("Incorrect origin");
 
             // 10. Verify that the value of C.tokenBinding.status matches the state of Token Binding for the TLS connection over which the attestation was obtained.
             // If Token Binding was used on that TLS connection, also verify that C.tokenBinding.id matches the base64url encoding of the Token Binding ID for the connection.
