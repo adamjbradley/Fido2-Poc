@@ -636,20 +636,24 @@
     <script src="https://cdn.rawgit.com/mgalante/jquery.redirect/master/jquery.redirect.js"></script>
 
     <script>// Update challenge string to expected Uint8Array
+
         var urlParams = new URLSearchParams(window.location.search);
         var username = urlParams.get('username');
-        var json = null;
-        jQuery.ajax({
-            url: 'https://fidowebauthnpoc.azurewebsites.net/api/AccountAPI/FidoRegister?username=' + username,
-            success: function (result) {
-                if (result.isOk == false) alert(result.message);
-                var stringified = JSON.stringify(result);
-                json = JSON.parse(stringified);
-            },
-            async: false
-        });
+        var challenge = urlParams.get('challenge');
+        var relyingPartyId = urlParams.get('relyingPartyId');
 
-        var byteCharacters = atob(json.challenge);
+        var json = null;
+        //jQuery.ajax({
+        //    url: 'https://fidowebauthnpoc.azurewebsites.net/api/AccountAPI/FidoRegister?username=' + username,
+        //    success: function (result) {
+        //        if (result.isOk == false) alert(result.message);
+        //        var stringified = JSON.stringify(result);
+        //        json = JSON.parse(stringified);
+        //    },
+        //    async: false
+        //});
+
+        var byteCharacters = atob(challenge);
         var byteNumbers = new Array(byteCharacters.length);
         for (var i = 0; i < byteCharacters.length; i++) {
             byteNumbers[i] = byteCharacters.charCodeAt(i);
@@ -667,14 +671,14 @@
         // Relying party details
         var rp = {
             name: "Test Site",
-            id: json.relyingPartyId
+            id: relyingPartyId
         };
 
         // User handle
         var user = {
-            name: json.username,
-            displayName: json.username,
-            id: new TextEncoder("utf-8").encode(json.username)
+            name: username,
+            displayName: username,
+            id: new TextEncoder("utf-8").encode(username)
         };
 
         var publicKey = { challenge, pubKeyCredParams, rp, user };
@@ -709,16 +713,22 @@
             }
 
             var credentialsAsJson = publicKeyCredentialToJSON(credentials);
+            console.log(credentialsAsJson);
+
+            var credentialsAsJsonString = '"' + btoa(JSON.stringify(credentialsAsJson)) + '"';
+            console.log(credentialsAsJsonString)
+
             $.ajax({
-                url: 'https://fidowebauthnpoc.azurewebsites.net/AccountAPI/RegisterCallback',
+                url: 'https://55bcad0a.ngrok.io/AccountAPI/RegisterCallbackJSON',
                 type: 'POST',
                 contentType: 'application/json',
-                data: JSON.stringify(credentialsAsJson),
+                data: credentialsAsJsonString,
                 success: function (result) {
                     console.log(result);
                     alert("Successfully registered " + username);
                 }
             });
+
         });</script>
 
 </body>

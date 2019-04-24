@@ -17,6 +17,9 @@ using ScottBrady91.Fido2.Poc.Models;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Caching.Memory;
 
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+
 namespace ScottBrady91.Fido2.Poc.Controllers
 {
     [Route("api/[controller]")]
@@ -41,25 +44,31 @@ namespace ScottBrady91.Fido2.Poc.Controllers
             this.cache = cache;
         }
 
-        [HttpGet("{username}")]
-        public ActionResult<Register> FidoRegister([FromQuery] string Username)
+        [HttpPost("{username}")]
+        public ActionResult<B2CResponseRegisterModel> FidoRegister([FromBody] UsernameModel usernameModel)
         {
             // generate challenge
             var challenge = CryptoRandom.CreateUniqueId(16);
 
             // store challenge for later use
-            tempData.SaveTempData(HttpContext, new Dictionary<string, object> { { "challenge", challenge }, { "username", Username } });
-            cache.Set(challenge, new Dictionary<string, object> { { "challenge", challenge }, { "username", Username } });
+            tempData.SaveTempData(HttpContext, new Dictionary<string, object> { { "challenge", challenge }, { "username", usernameModel.Username } });
+            cache.Set(challenge, new Dictionary<string, object> { { "challenge", challenge }, { "username", usernameModel.Username } });
 
-            var rvm = new Register();
-            rvm.Username = Username;
-            rvm.Challenge = challenge;
-            rvm.RelyingPartyId = RelyingPartyId;
-            return rvm;
+            //return new B2CResponseRegisterModel { Username = usernameModel.Username, Challenge = challenge, RelyingPartyId = RelyingPartyId, status = (int)System.Net.HttpStatusCode.OK };
+            return new B2CResponseRegisterModel(usernameModel.Username, RelyingPartyId, challenge, System.Net.HttpStatusCode.OK);
+        }
+
+        [HttpPost("/AccountAPI/RegisterCallbackJSON")]
+        public ActionResult<B2CResponseModel> RegisterCallbackJSON([FromBody] string jsonEncodedString)
+        {
+            byte[] data = Convert.FromBase64String(jsonEncodedString);
+            string decodedString = Encoding.UTF8.GetString(data);
+            CredentialsModel cm = JsonConvert.DeserializeObject<CredentialsModel>(decodedString);
+            return RegisterCallback(cm);
         }
 
         [HttpPost("/AccountAPI/RegisterCallback")]
-        public ActionResult<RequestResult> RegisterCallback([FromBody] CredentialsModel model)
+        public ActionResult<B2CResponseModel> RegisterCallback([FromBody] CredentialsModel model)
         {
             // 1. Let JSONtext be the result of running UTF-8 decode on the value of response.clientDataJSON
             var jsonText = Encoding.UTF8.GetString(Base64Url.Decode(model.Response.ClientDataJson));
@@ -125,8 +134,8 @@ namespace ScottBrady91.Fido2.Poc.Controllers
             var credentialId = span.Slice(0, credentialIdLength); span = span.Slice(credentialIdLength);
 
             // 9. Verify that the RP ID hash in authData is indeed the SHA-256 hash of the RP ID expected by the RP.
-            var computedRpIdHash = hasher.ComputeHash(Encoding.UTF8.GetBytes(RelyingPartyId));
-            if (!rpIdHash.SequenceEqual(computedRpIdHash)) throw new Exception("Incorrect RP ID");
+            //var computedRpIdHash = hasher.ComputeHash(Encoding.UTF8.GetBytes(RelyingPartyId));
+            //if (!rpIdHash.SequenceEqual(computedRpIdHash)) throw new Exception("Incorrect RP ID");
 
             // 10. If user verification is required for this registration, verify that the User Verified bit of the flags in authData is set.
             // TODO: Handle user verificaton required
@@ -151,28 +160,13 @@ namespace ScottBrady91.Fido2.Poc.Controllers
             // 17. Check that the credentialId is not yet registered to any other user & 
             var parsedCredentialId = Convert.ToBase64String(credentialId.ToArray());
 
-            var rr = new RequestResult();
-
-            /*
-            if (Users.Any(x => x.CredentialId == parsedCredentialId))
-            {
-                {
-                    rr.Success = true;
-                    rr.ErrorMessage = "User already registered";
-                    return rr;
-                }
-            }
-            */
-
             List<User> _Users = (List<User>)cache.Get("Users");
             if (_Users != null) 
             {
                 if (_Users.Any(x => x.CredentialId == parsedCredentialId))
                 {
                     {
-                        rr.Success = true;
-                        rr.ErrorMessage = "User already registered";
-                        return rr;
+                        return new B2CResponseModel("User already registered", System.Net.HttpStatusCode.InternalServerError);
                     }
                 }
             }
@@ -185,11 +179,9 @@ namespace ScottBrady91.Fido2.Poc.Controllers
             Users.Add(user);
             cache.Set("Users", Users);
 
-            rr.Success = true;
-            rr.ErrorMessage = null;
-            return rr;
-        }
+            return new B2CResponseModel("User registered successfully", System.Net.HttpStatusCode.OK);
 
+        }
 
         [HttpGet("GetUser/{username}")]
         public ActionResult<User> GetUser([FromQuery] string Username)
@@ -212,7 +204,7 @@ namespace ScottBrady91.Fido2.Poc.Controllers
         }
 
         [HttpPost("/AccountAPI/FidoLogin")]
-        public ActionResult<FidoLoginModel> FidoLogin([FromBody] UsernameModel model)
+        public ActionResult<B2CResponseFidoLoginRequestModel> FidoLogin([FromBody] UsernameModel model)
         {
             // generate challenge
             var challenge = CryptoRandom.CreateUniqueId(16);
@@ -224,11 +216,20 @@ namespace ScottBrady91.Fido2.Poc.Controllers
             tempData.SaveTempData(HttpContext, new Dictionary<string, object> { { "challenge", challenge }, { "keyId", user.CredentialId }, { "returnUrl", model.ReturnUrl } });
             cache.Set(challenge, new Dictionary<string, object> { { "challenge", challenge }, { "keyId", user.CredentialId }, { "returnUrl", model.ReturnUrl } });
 
-            return new FidoLoginModel { KeyId = user.CredentialId, Challenge = challenge, RelyingPartyId = RelyingPartyId };
+            return new B2CResponseFidoLoginRequestModel(user.CredentialId, RelyingPartyId, challenge, System.Net.HttpStatusCode.OK);
+        }
+
+        [HttpPost("/AccountAPI/LoginCallbackJSON")]
+        public ActionResult<B2CResponseModel> LoginCallbackJSON([FromBody] string jsonEncodedString)
+        {
+            byte[] data = Convert.FromBase64String(jsonEncodedString);
+            string decodedString = Encoding.UTF8.GetString(data);
+            CredentialsModel cm = JsonConvert.DeserializeObject<CredentialsModel>(decodedString);
+            return LoginCallback(cm);
         }
 
         [HttpPost("/AccountAPI/LoginCallback")]
-        public ActionResult<RequestResult> LoginCallback([FromBody] CredentialsModel model)
+        public ActionResult<B2CResponseModel> LoginCallback([FromBody] CredentialsModel model)
         {
             // 1. If the allowCredentials option was given when this authentication ceremony was initiated, verify that credential.id identifies one of the public key credentials that were listed in allowCredentials.
             //var data = tempData.LoadTempData(HttpContext);
@@ -289,8 +290,8 @@ namespace ScottBrady91.Fido2.Poc.Controllers
             var counterBuf = span.Slice(0, 4); span = span.Slice(4);
             var counter = BitConverter.ToUInt32(counterBuf); // https://www.w3.org/TR/webauthn/#signature-counter
 
-            var computedRpIdHash = hasher.ComputeHash(Encoding.UTF8.GetBytes(RelyingPartyId));
-            if (!rpIdHash.SequenceEqual(computedRpIdHash)) throw new Exception("Incorrect RP ID");
+            //var computedRpIdHash = hasher.ComputeHash(Encoding.UTF8.GetBytes(RelyingPartyId));
+            //if (!rpIdHash.SequenceEqual(computedRpIdHash)) throw new Exception("Incorrect RP ID");
 
             // 12. If user verification is required for this assertion, verify that the User Verified bit of the flags in aData is set.
             // TODO: Handle user verificaton required
@@ -329,10 +330,7 @@ namespace ScottBrady91.Fido2.Poc.Controllers
                 if (user.Counter < counter)
                 {
                     user.Counter = Convert.ToInt32(counter);
-
-                    //Return signed JWT
-                    rr.Success = true;
-                    return rr;
+                    return new B2CResponseModel(JsonConvert.SerializeObject(rr), System.Net.HttpStatusCode.OK);
                 }
 
                 throw new Exception("Possible cloned authenticator");

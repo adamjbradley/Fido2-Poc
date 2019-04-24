@@ -1,5 +1,4 @@
-﻿
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
@@ -606,7 +605,6 @@
 </head>
 <body>
 
-
     <div id="background_branding_container">
         <img id="background_background_image" src="https://login.microsoftonline.com/static/tenant/default/img/default_signin_illustration_optimized.png" alt="Illustration" />
     </div>
@@ -619,8 +617,8 @@
                     <td id="panel_center">
                         <div class="inner_container">
                             <div class="api_container normaltext">
-                                <h1>Login</h1>
-                                <p>Please use your FIDO authenticator...</p>
+                                <h1>Sample Page</h1>
+                                <p>Just an Azure AD B2C Sample Page...</p>
 
                                 <div id="api"></div>
 
@@ -633,117 +631,70 @@
         </table>
     </div>
 
-    <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.3.1.min.js" crossorigin="anonymous" integrity="sha384-tsQFqpEReu7ZLhBV2VZlAu7zcOV+rXbYlF2cqB8txI/8aZajjp4Bqd+V6D5IgvKT"></script>
-    <script src="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/bootstrap.min.js" crossorigin="anonymous" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"></script>
-    <script src="https://cdn.rawgit.com/mgalante/jquery.redirect/master/jquery.redirect.js"></script>
 
-    <script>// Update challenge string to expected Uint8Array
+        <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.3.1.min.js" crossorigin="anonymous" integrity="sha384-tsQFqpEReu7ZLhBV2VZlAu7zcOV+rXbYlF2cqB8txI/8aZajjp4Bqd+V6D5IgvKT"></script>
+        <script src="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/bootstrap.min.js" crossorigin="anonymous" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"></script>
+        <script src="https://cdn.rawgit.com/mgalante/jquery.redirect/master/jquery.redirect.js"></script>
 
-        var urlParams = new URLSearchParams(window.location.search);
-        var returnUrl = urlParams.get('returnUrl');
-
-        var keyId = urlParams.get('kid');
-        var challenge = urlParams.get('challenge');
-        var relyingPartyId = urlParams.get('relyingPartyId');
-
-        // User handle
-        var json = null;
-        var UsernameModel = {
-            ReturnUrl: returnUrl,
-            Username: keyId
-        };
-
-        //$.ajax({
-        //    url: 'https://fidowebauthnpoc.azurewebsites.net/AccountAPI/FidoLogin',
-        //    type: 'POST',
-        //    contentType: 'application/json',
-        //    data: JSON.stringify(UsernameModel),
-        //    success: function (result) {
-        //        if (result.isOk == false) alert(result.message);
-        //        var stringified = JSON.stringify(result);
-        //        json = JSON.parse(stringified);
-        //    },
-        //    async: false
-        //});
-
-        var byteCharacters = atob(challenge);
-        var byteNumbers = new Array(byteCharacters.length);
-        for (var i = 0; i < byteCharacters.length; i++) {
-            byteNumbers[i] = byteCharacters.charCodeAt(i);
-        }
-        var challenge = new Uint8Array(byteNumbers);
-
-        // Update key ID string to expected Uint8Array
-        var raw = window.atob(keyId);
-        var rawLength = raw.length;
-        var key = new Uint8Array(new ArrayBuffer(rawLength));
-
-        for (i = 0; i < rawLength; i++) {
-            key[i] = raw.charCodeAt(i);
-        }
-
-        // Key details
-        var allowCredentials = [
-            {
-                type: "public-key",
-                id: key,
-                transports: ["usb"]
-            }
-        ];
-
-        // Relying party details
-        var rpId = relyingPartyId;
-
-        var publicKey = { challenge, allowCredentials, rpId };
-
-        navigator.credentials.get({ publicKey }).then((credentials) => {
-            console.log(credentials);
-
-            var publicKeyCredentialToJSON = (pubKeyCred) => {
-                if (pubKeyCred instanceof Array) {
-                    let arr = [];
-                    for (let i of pubKeyCred)
-                        arr.push(publicKeyCredentialToJSON(i));
-
-                    return arr;
+        <script>"use strict";
+            $(document).ready(function () {
+                if (navigator.userAgent.match(/IEMobile\/10\.0/))
+                {
+                    var t = document.createElement("style");
+                    t.appendChild(document.createTextNode("@@-ms-viewport{width:auto!important}")),
+                    t.appendChild(document.createTextNode("@@-ms-viewport{height:auto!important}")), document.getElementsByTagName("head")[0].appendChild(t)
                 }
 
-                if (pubKeyCred instanceof ArrayBuffer) {
-                    return btoa(String.fromCharCode.apply(null, new Uint8Array(pubKeyCred)));
+                if (navigator.userAgent.match(/MSIE 10/i)) {
+                    var e = $("#footer_links_container");
+                    $(e).css("padding-top", "100px")
                 }
 
-                if (pubKeyCred instanceof Object) {
-                    let obj = {};
+                var o,
+                i = $("#background_background_image"),
+                n = function ()
+                {
+                    document.body.style.overflow = "hidden",
+                    ($(window).width() - 500) / $(window).height() < o ? (i.height($(window).height()),
+                    i.width("auto")) : (i.width($(window).width() - 500),
+                    i.height("auto")), document.body.style.overflow = ""
+                };
 
-                    for (let key in pubKeyCred) {
-                        obj[key] = publicKeyCredentialToJSON(pubKeyCred[key]);
-                    }
-
-                    return obj;
-                }
-
-                return pubKeyCred;
-            }
-
-            var credentialsAsJson = publicKeyCredentialToJSON(credentials);
-            console.log(credentialsAsJson);
-
-            var credentialsAsJsonString = '"' + btoa(JSON.stringify(credentialsAsJson)) + '"';
-            console.log(credentialsAsJsonString)
-
-            $.ajax({
-                //    url: 'https://fidowebauthnpoc.azurewebsites.net/AccountAPI/LoginCallback',
-                url: 'https://55bcad0a.ngrok.io/AccountAPI/LoginCallbackJSON',
-                type: 'POST',
-                contentType: 'application/json',
-                data: credentialsAsJsonString,
-                success: function (result) {
-                    console.log(result);
-                    alert("Successfully logged in");
-                }
+                $("<img>").attr("src", i.attr("src")),
+                $(window).resize(function () {
+                    n() }
+                ),
+                "undefined" != typeof $("#MicrosoftAccountExchange") && $("#MicrosoftAccountExchange").text("Microsoft"),
+                $("*").removeAttr("placeholder")
             });
+        </script>
 
-        });</script>
+        <script>
+            $(function () {
+                var $strongAuthenticationAppQRCodeBitmapImage = $('#strongAuthenticationAppQRCodeBitmapImage');
+                var $strongAuthenticationAppQRCodeBitmapTextInput = $('#strongAuthenticationAppQRCodeBitmap');
+                $strongAuthenticationAppQRCodeBitmapImage.attr('src', 'data:image/png;base64,' + $strongAuthenticationAppQRCodeBitmapTextInput.val());
+                $('#attributeList ul li:nth-child(2)').remove();
+            });
+        </script>
+
+        <script>// Update challenge string to expected Uint8Array
+
+            var urlParams = new URLSearchParams(window.location.search);
+            var returnUrl = urlParams.get('returnUrl');
+
+            var keyId = urlParams.get('kid');
+            var challenge = urlParams.get('challenge');
+            var relyingPartyId = urlParams.get('relyingPartyId');
+
+            // User handle
+            var json = null;
+            var UsernameModel = {
+                ReturnUrl: returnUrl,
+                Username: keyId
+            };
+        </script>
+
 
 </body>
 </html>
