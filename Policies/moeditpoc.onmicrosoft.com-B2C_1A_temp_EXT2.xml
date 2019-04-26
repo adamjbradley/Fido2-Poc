@@ -1,10 +1,9 @@
-<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="moeditpoc.onmicrosoft.com" PolicyId="B2C_1A_temp_EXT4" PublicPolicyUri="http://moeditpoc.onmicrosoft.com/B2C_1A_temp_EXT4" TenantObjectId="d906d687-7b26-4409-b5ad-c7507b5d7537">
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="moeditpoc.onmicrosoft.com" PolicyId="B2C_1A_temp_EXT2" PublicPolicyUri="http://moeditpoc.onmicrosoft.com/B2C_1A_temp_EXT2" TenantObjectId="d906d687-7b26-4409-b5ad-c7507b5d7537">
   <BasePolicy>
     <TenantId>moeditpoc.onmicrosoft.com</TenantId>
     <PolicyId>B2C_1A_temp_Base2</PolicyId>
   </BasePolicy>
   <BuildingBlocks>
-
     <ClaimsSchema>
       <ClaimType Id="User.LastName">
         <DisplayName>User.LastName</DisplayName>
@@ -141,61 +140,35 @@
         <DataType>string</DataType>
       </ClaimType>
       <!-- AJB FIDO WebAuthN -->
-      <!-- Demo: The app code user provided-->
-      <ClaimType Id="extension_webAuthNRegistered">
-        <DisplayName></DisplayName>
-        <DataType>string</DataType>
-        <UserInputType>Readonly</UserInputType>
-      </ClaimType>
-      <ClaimType Id="fidoUsername">
-        <DisplayName>FIDO Username</DisplayName>
-        <DataType>string</DataType>
-        <UserInputType>Readonly</UserInputType>
-      </ClaimType>
-      <ClaimType Id="fidoChallenge">
-        <DisplayName>FIDO Challenge</DisplayName>
-        <DataType>string</DataType>
-        <UserInputType>Readonly</UserInputType>
-      </ClaimType>
-      <ClaimType Id="fidoRelyingPartyId">
-        <DisplayName>FIDO Relying Party Id</DisplayName>
-        <DataType>string</DataType>
-        <UserInputType>Readonly</UserInputType>
-      </ClaimType>
-      <ClaimType Id="fidoKeyId">
-        <DisplayName>FIDO Key Id</DisplayName>
-        <DataType>string</DataType>
-        <UserInputType>Readonly</UserInputType>
-      </ClaimType>
-      <ClaimType Id="fidoRegisterCallbackJSON">
-        <DisplayName>FIDO Registration Callback JSON</DisplayName>
-        <DataType>string</DataType>
-        <UserInputType>TextBox</UserInputType>
-      </ClaimType>
-      <ClaimType Id="fidoLoginCallbackJSON">
-        <DisplayName>FIDO Login Callback JSON</DisplayName>
-        <DataType>string</DataType>
-        <UserInputType>TextBox</UserInputType>
-      </ClaimType>
-
     </ClaimsSchema>
-
     <ContentDefinitions>
-      <!-- AJB FIDO WebAuthN -->
-      <ContentDefinition Id="api.selfasserted.fido.registration">
-        <LoadUri>https://b2cdemofiles.blob.core.windows.net/b2c/SimplePageBase.html</LoadUri>
+      <!-- AJB TOTP -->
+      <!-- Demo: The following content definition is used for registering a verification app.
+      This HTML5 page, reads the QR code and presents image user can scan.
+      Note: the paged run JavaScript. Use custom or shared domain to allow running client side code -->
+      <ContentDefinition Id="api.selfasserted.appfactor.registration">
+        <LoadUri>https://unifysecuredev.azurewebsites.net/selfasserted-appfactor-registration.html</LoadUri>
         <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
         <DataUri>urn:com:microsoft:aad:b2c:elements:contract:selfasserted:1.1.0</DataUri>
         <Metadata>
-          <Item Key="DisplayName">FIDO WebAuthN Register</Item>
+          <Item Key="DisplayName">App Factor</Item>
+        </Metadata>
+      </ContentDefinition>
+      <!-- AJB FIDO WebAuthN -->
+      <ContentDefinition Id="api.selfasserted.fido.registration">
+        <LoadUri>https://fidowebauthnpoc.azurewebsites.net/FidoRegister.html</LoadUri>
+        <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+        <DataUri>urn:com:microsoft:aad:b2c:elements:contract:selfasserted:1.1.0</DataUri>
+        <Metadata>
+          <Item Key="DisplayName">App Factor</Item>
         </Metadata>
       </ContentDefinition>
       <ContentDefinition Id="api.selfasserted.fido.login">
-        <LoadUri>https://b2cdemofiles.blob.core.windows.net/b2c/SimplePageBaseLogin.html</LoadUri>
+        <LoadUri>https://fidowebauthnpoc.azurewebsites.net/FidoLogin.html?username=ajb</LoadUri>
         <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
         <DataUri>urn:com:microsoft:aad:b2c:elements:contract:selfasserted:1.1.0</DataUri>
         <Metadata>
-          <Item Key="DisplayName">FIDO WebAuthN Login</Item>
+          <Item Key="DisplayName">App Factor</Item>
         </Metadata>
       </ContentDefinition>
     </ContentDefinitions>
@@ -239,7 +212,7 @@
           <DisplayName>AzureInsights-Common</DisplayName>
           <Metadata>
             <!--Instrumentation Key for the Application Insight-->
-            <Item Key="InstrumentationKey">dc69b0e2-09e5-4ff6-8ec5-d6b9f8fea448</Item>
+            <Item Key="InstrumentationKey">3fb50e1e-dd75-4157-a985-feb52ae8bbd7</Item>
           </Metadata>
           <InputClaims>
             <InputClaim ClaimTypeReferenceId="identityProvider" PartnerClaimType="{property:identityProvider}" DefaultValue="" />
@@ -405,6 +378,52 @@
         </TechnicalProfile>
       </TechnicalProfiles>
     </ClaimsProvider>
+    <!-- AJB TOTP -->
+    <!-- Demo: The following claims provider defines the REST providers. -->
+    <ClaimsProvider>
+      <DisplayName>REST API</DisplayName>
+      <TechnicalProfiles>
+        <!-- Demo: The following technical profile generates a time-based one-time password (TOTP).
+        We use the technical  profile to register new user-->
+        <TechnicalProfile Id="AppFactor-GenerateTotpWebHook">
+          <DisplayName>Generate TOTP Web Hook Azure Function</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+          <Metadata>
+            <Item Key="ServiceUrl">https://unifysecuredev.azurewebsites.net/api/identity/Generate</Item>
+            <Item Key="AuthenticationType">None</Item>
+            <Item Key="SendClaimsIn">Body</Item>
+          </Metadata>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="email" PartnerClaimType="userName" />
+          </InputClaims>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="strongAuthenticationAppQRCodeBitmap" PartnerClaimType="qrCodeBitmap" />
+            <OutputClaim ClaimTypeReferenceId="extension_StrongAuthenticationAppSecretKey" PartnerClaimType="secretKey" />
+          </OutputClaims>
+          <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
+        </TechnicalProfile>
+        <!-- Demo: The following technical profile verifies a time-based one-time password (TOTP).
+        We call this technical profile during registration process and sign-in process-->
+        <TechnicalProfile Id="AppFactor-VerifyTotpWebHook">
+          <DisplayName>Verify TOTP Web Hook Azure Function</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+          <Metadata>
+            <Item Key="ServiceUrl">https://unifysecuredev.azurewebsites.net/api/identity/verify</Item>
+            <Item Key="AuthenticationType">None</Item>
+            <Item Key="SendClaimsIn">Body</Item>
+          </Metadata>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="strongAuthenticationAppCode" PartnerClaimType="totpCode" />
+            <InputClaim ClaimTypeReferenceId="extension_StrongAuthenticationAppSecretKey" PartnerClaimType="secretKey" />
+            <InputClaim ClaimTypeReferenceId="extension_StrongAuthenticationAppTimeStepMatched" PartnerClaimType="timeStepMatched" />
+          </InputClaims>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="extension_StrongAuthenticationAppTimeStepMatched" PartnerClaimType="timeStepMatched" />
+          </OutputClaims>
+          <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
+        </TechnicalProfile>
+      </TechnicalProfiles>
+    </ClaimsProvider>
     <ClaimsProvider>
       <DisplayName>Azure Active Directory Store</DisplayName>
       <TechnicalProfiles>
@@ -447,96 +466,58 @@
         </TechnicalProfile>
       </TechnicalProfiles>
     </ClaimsProvider>
-
-    <!-- AJB FIDO WebAuthN -->
     <ClaimsProvider>
-      <DisplayName>REST API FIDO WebAuthN</DisplayName>
+      <DisplayName>App Factor</DisplayName>
       <TechnicalProfiles>
-        <TechnicalProfile Id="FIDO-RegisterAPI">
-          <DisplayName>Generate FIDO WebAuthN Register Challenge</DisplayName>
-          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+        <!-- Demo: The following technical profile registers a verification phone. -->
+        <TechnicalProfile Id="AppFactor-Register">
+          <DisplayName>App Factor</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
           <Metadata>
-            <Item Key="ServiceUrl">https://fidowebauthnpoc.azurewebsites.net/AccountAPI/FidoRegister</Item>
-            <!--
-            <Item Key="ServiceUrl">https://fidowebauthnpoc.azurewebsites.net/AccountAPI/FidoRegister</Item>            
-            <Item Key="ServiceUrl">https://5b1fb279.ngrok.io/AccountAPI/FidoRegister</Item>            
-            -->
-            <Item Key="AuthenticationType">None</Item>
-            <Item Key="SendClaimsIn">Body</Item>
+            <Item Key="ContentDefinitionReferenceId">api.selfasserted.appfactor.registration</Item>
           </Metadata>
+          <CryptographicKeys>
+            <Key Id="issuer_secret" StorageReferenceId="B2C_1A_TokenSigningKeyContainer" />
+          </CryptographicKeys>
           <InputClaims>
-            <InputClaim ClaimTypeReferenceId="email" PartnerClaimType="Username" />
+            <InputClaim ClaimTypeReferenceId="email" />
+            <InputClaim ClaimTypeReferenceId="strongAuthenticationAppQRCodeBitmap" />
+            <InputClaim ClaimTypeReferenceId="extension_StrongAuthenticationAppSecretKey" />
           </InputClaims>
           <OutputClaims>
-            <OutputClaim ClaimTypeReferenceId="fidoUsername" PartnerClaimType="username" />
-            <OutputClaim ClaimTypeReferenceId="fidoChallenge" PartnerClaimType="challenge" />
-            <OutputClaim ClaimTypeReferenceId="fidoRelyingPartyId" PartnerClaimType="relyingPartyId" />
+            <OutputClaim ClaimTypeReferenceId="strongAuthenticationAppCode" Required="true" />
+            <OutputClaim ClaimTypeReferenceId="strongAuthenticationAppQRCodeBitmap" />
+            <OutputClaim ClaimTypeReferenceId="extension_StrongAuthenticationAppTimeStepMatched" />
           </OutputClaims>
-          <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
+          <ValidationTechnicalProfiles>
+            <ValidationTechnicalProfile ReferenceId="AppFactor-VerifyTotpWebHook" />
+          </ValidationTechnicalProfiles>
+          <!--<UseTechnicalProfileForSessionManagement ReferenceId="SSOSession-PhoneFactor" />-->
         </TechnicalProfile>
-
-        <TechnicalProfile Id="FIDO-RegisterCallbackAPI">
-          <DisplayName>Verify FIDO WebAuthN Registration</DisplayName>
-          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+        <!-- Demo: The following technical profile asks the user to provide the TOTP code
+        and run calls the validation technical profile to validate the TOTP-->
+        <TechnicalProfile Id="AppFactor-Challenge">
+          <DisplayName>App Factor</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
           <Metadata>
-            <Item Key="ServiceUrl">https://fidowebauthnpoc.azurewebsites.net/AccountAPI/RegisterCallbackJSON</Item>
-            <!--
-            <Item Key="ServiceUrl">https://fidowebauthnpoc.azurewebsites.net/AccountAPI/RegisterCallbackJSON</Item>
-            <Item Key="ServiceUrl">https://5b1fb279.ngrok.io/AccountAPI/RegisterCallbackJSON</Item>
-            -->
-            <Item Key="AuthenticationType">None</Item>
-            <Item Key="SendClaimsIn">Body</Item>
+            <Item Key="ContentDefinitionReferenceId">api.selfasserted</Item>
           </Metadata>
+          <CryptographicKeys>
+            <Key Id="issuer_secret" StorageReferenceId="B2C_1A_TokenSigningKeyContainer" />
+          </CryptographicKeys>
           <InputClaims>
-            <InputClaim ClaimTypeReferenceId="fidoRegisterCallbackJSON" PartnerClaimType="callback" />
+            <InputClaim ClaimTypeReferenceId="email" />
+            <InputClaim ClaimTypeReferenceId="extension_StrongAuthenticationAppSecretKey" />
+            <InputClaim ClaimTypeReferenceId="extension_StrongAuthenticationAppTimeStepMatched" />
           </InputClaims>
           <OutputClaims>
-            <OutputClaim ClaimTypeReferenceId="email" PartnerClaimType="Username" />
+            <OutputClaim ClaimTypeReferenceId="strongAuthenticationAppCode" Required="true" />
+            <OutputClaim ClaimTypeReferenceId="extension_StrongAuthenticationAppTimeStepMatched" />
           </OutputClaims>
-          <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
-        </TechnicalProfile>
-
-        <TechnicalProfile Id="FIDO-LoginAPI">
-          <DisplayName>Generate FIDO WebAuthN Login Challenge</DisplayName>
-          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
-          <Metadata>
-            <Item Key="ServiceUrl">https://fidowebauthnpoc.azurewebsites.net/AccountAPI/FidoLogin</Item>
-            <!--
-            <Item Key="ServiceUrl">https://fidowebauthnpoc.azurewebsites.net/AccountAPI/FidoLogin</Item>
-            <Item Key="ServiceUrl">https://5b1fb279.ngrok.io/AccountAPI/FidoLogin</Item>
-            -->    
-            <Item Key="AuthenticationType">None</Item>
-            <Item Key="SendClaimsIn">Body</Item>
-          </Metadata>
-          <InputClaims>
-            <InputClaim ClaimTypeReferenceId="email" PartnerClaimType="Username" />
-          </InputClaims>
-          <OutputClaims>
-            <OutputClaim ClaimTypeReferenceId="fidoChallenge" PartnerClaimType="challenge" />
-            <OutputClaim ClaimTypeReferenceId="fidoRelyingPartyId" PartnerClaimType="relyingPartyId" />
-            <OutputClaim ClaimTypeReferenceId="fidoKeyId" PartnerClaimType="keyId" />
-          </OutputClaims>
-          <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
-        </TechnicalProfile>
-        <TechnicalProfile Id="FIDO-LoginCallbackAPI">
-          <DisplayName>Verify FIDO Login Callback</DisplayName>
-          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
-          <Metadata>
-            <Item Key="ServiceUrl">https://fidowebauthnpoc.azurewebsites.net/AccountAPI/LoginCallbackJSON</Item>
-            <!--
-            <Item Key="ServiceUrl">https://fidowebauthnpoc.azurewebsites.net/AccountAPI/LoginCallbackJSON</Item>
-            <Item Key="ServiceUrl">https://5b1fb279.ngrok.io/AccountAPI/LoginCallbackJSON</Item>
-            -->
-            <Item Key="AuthenticationType">None</Item>
-            <Item Key="SendClaimsIn">Body</Item>
-          </Metadata>
-          <InputClaims>
-            <InputClaim ClaimTypeReferenceId="fidoLoginCallbackJSON" PartnerClaimType="callback" />
-          </InputClaims>
-          <OutputClaims>
-            <OutputClaim ClaimTypeReferenceId="email" PartnerClaimType="Username" />
-          </OutputClaims>
-          <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
+          <ValidationTechnicalProfiles>
+            <ValidationTechnicalProfile ReferenceId="AppFactor-VerifyTotpWebHook" />
+          </ValidationTechnicalProfiles>
+          <!--<UseTechnicalProfileForSessionManagement ReferenceId="SSOSession-PhoneFactor" />-->
         </TechnicalProfile>
       </TechnicalProfiles>
     </ClaimsProvider>
@@ -546,52 +527,53 @@
       <TechnicalProfiles>
         <!-- Demo: The following technical profile registers a verification phone. -->
         <TechnicalProfile Id="Fido-Register">
-          <DisplayName>FIDO Register</DisplayName>
+          <DisplayName>App Factor</DisplayName>
           <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
           <Metadata>
-            <Item Key="ContentDefinitionReferenceId">api.selfasserted.fido.registration</Item>            
+            <Item Key="ContentDefinitionReferenceId">api.selfasserted.appfactor.registration</Item>
           </Metadata>
           <CryptographicKeys>
             <Key Id="issuer_secret" StorageReferenceId="B2C_1A_TokenSigningKeyContainer" />
           </CryptographicKeys>
           <InputClaims>
-            <InputClaim ClaimTypeReferenceId="fidoUsername" />
-            <InputClaim ClaimTypeReferenceId="fidoChallenge" />
-            <InputClaim ClaimTypeReferenceId="fidoRelyingPartyId" />
+            <InputClaim ClaimTypeReferenceId="email" />
+            <InputClaim ClaimTypeReferenceId="strongAuthenticationAppQRCodeBitmap" />
+            <InputClaim ClaimTypeReferenceId="extension_StrongAuthenticationAppSecretKey" />
           </InputClaims>
           <OutputClaims>
-            <OutputClaim ClaimTypeReferenceId="fidoUsername" />
-            <OutputClaim ClaimTypeReferenceId="fidoChallenge" />
-            <OutputClaim ClaimTypeReferenceId="fidoRelyingPartyId" />
-            <OutputClaim ClaimTypeReferenceId="fidoRegisterCallbackJSON" />
+            <OutputClaim ClaimTypeReferenceId="strongAuthenticationAppCode" Required="true" />
+            <OutputClaim ClaimTypeReferenceId="strongAuthenticationAppQRCodeBitmap" />
+            <OutputClaim ClaimTypeReferenceId="extension_StrongAuthenticationAppTimeStepMatched" />
           </OutputClaims>
           <ValidationTechnicalProfiles>
-            <ValidationTechnicalProfile ReferenceId="FIDO-RegisterCallbackAPI" />
-          </ValidationTechnicalProfiles>          
+            <ValidationTechnicalProfile ReferenceId="AppFactor-VerifyTotpWebHook" />
+          </ValidationTechnicalProfiles>
+          <!--<UseTechnicalProfileForSessionManagement ReferenceId="SSOSession-PhoneFactor" />-->
         </TechnicalProfile>
-        <TechnicalProfile Id="Fido-Login">
-          <DisplayName>FIDO Login</DisplayName>
+        <!-- Demo: The following technical profile asks the user to provide the TOTP code
+        and run calls the validation technical profile to validate the TOTP-->
+        <TechnicalProfile Id="AppFactor-Challenge">
+          <DisplayName>App Factor</DisplayName>
           <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
           <Metadata>
-            <Item Key="ContentDefinitionReferenceId">api.selfasserted.fido.login</Item>
+            <Item Key="ContentDefinitionReferenceId">api.selfasserted</Item>
           </Metadata>
           <CryptographicKeys>
             <Key Id="issuer_secret" StorageReferenceId="B2C_1A_TokenSigningKeyContainer" />
           </CryptographicKeys>
           <InputClaims>
-            <InputClaim ClaimTypeReferenceId="fidoChallenge" />
-            <InputClaim ClaimTypeReferenceId="fidoRelyingPartyId" />
-            <InputClaim ClaimTypeReferenceId="fidoKeyId" />
+            <InputClaim ClaimTypeReferenceId="email" />
+            <InputClaim ClaimTypeReferenceId="extension_StrongAuthenticationAppSecretKey" />
+            <InputClaim ClaimTypeReferenceId="extension_StrongAuthenticationAppTimeStepMatched" />
           </InputClaims>
-          <OutputClaims>            
-            <OutputClaim ClaimTypeReferenceId="fidoChallenge" />
-            <OutputClaim ClaimTypeReferenceId="fidoRelyingPartyId" />
-            <OutputClaim ClaimTypeReferenceId="fidoKeyId" />
-            <OutputClaim ClaimTypeReferenceId="fidoLoginCallbackJSON" />
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="strongAuthenticationAppCode" Required="true" />
+            <OutputClaim ClaimTypeReferenceId="extension_StrongAuthenticationAppTimeStepMatched" />
           </OutputClaims>
           <ValidationTechnicalProfiles>
-            <ValidationTechnicalProfile ReferenceId="FIDO-LoginCallbackAPI" />
+            <ValidationTechnicalProfile ReferenceId="AppFactor-VerifyTotpWebHook" />
           </ValidationTechnicalProfiles>
+          <!--<UseTechnicalProfileForSessionManagement ReferenceId="SSOSession-PhoneFactor" />-->
         </TechnicalProfile>
       </TechnicalProfiles>
     </ClaimsProvider>
@@ -607,7 +589,6 @@
         </TechnicalProfile>
       </TechnicalProfiles>
     </ClaimsProvider>
-
     <!-- AJB Common AAD Claims Provider for TOTP -->
     <ClaimsProvider>
       <Domain>commonaad</Domain>
@@ -675,7 +656,6 @@
       </TechnicalProfiles>
     </ClaimsProvider>
   </ClaimsProviders>
-
   <UserJourneys>
     <UserJourney Id="SignInJwt">
       <OrchestrationSteps>
@@ -917,14 +897,13 @@
       </OrchestrationSteps>
       <ClientDefinition ReferenceId="DefaultWeb" />
     </UserJourney>
-
-    <!-- AJB FIDO -->
-    <UserJourney Id="SignUpOrSignInFIDO">
+    <!-- AJB TOTP -->
+    <UserJourney Id="SignUpOrSignInTOTP">
       <OrchestrationSteps>
         <OrchestrationStep Order="1" Type="CombinedSignInAndSignUp" ContentDefinitionReferenceId="api.signuporsignin">
           <ClaimsProviderSelections>
-            <ClaimsProviderSelection ValidationClaimsExchangeId="LocalAccountSigninEmailExchange" />            
-            <ClaimsProviderSelection TargetClaimsExchangeId="GoogleAccountExchange" />
+            <ClaimsProviderSelection ValidationClaimsExchangeId="LocalAccountSigninEmailExchange" />
+            <ClaimsProviderSelection TargetClaimsExchangeId="O365AccountExchange" />
           </ClaimsProviderSelections>
           <ClaimsExchanges>
             <ClaimsExchange Id="LocalAccountSigninEmailExchange" TechnicalProfileReferenceId="SelfAsserted-LocalAccountSignin-Email" />
@@ -939,8 +918,8 @@
             </Precondition>
           </Preconditions>
           <ClaimsExchanges>
-            <ClaimsExchange Id="SignUpWithLogonEmailExchange" TechnicalProfileReferenceId="LocalAccountSignUpWithLogonEmail" />            
-            <ClaimsExchange Id="GoogleAccountExchange" TechnicalProfileReferenceId="IDP-Google-OAUTH" />
+            <ClaimsExchange Id="SignUpWithLogonEmailExchange" TechnicalProfileReferenceId="LocalAccountSignUpWithLogonEmail" />
+            <ClaimsExchange Id="O365AccountExchange" TechnicalProfileReferenceId="Common-AAD" />
           </ClaimsExchanges>
         </OrchestrationStep>
         <!-- For social IDP authentication, attempt to find the user account in the directory. -->
@@ -984,7 +963,6 @@
             <ClaimsExchange Id="AADUserWrite" TechnicalProfileReferenceId="AAD-UserWriteUsingAlternativeSecurityId" />
           </ClaimsExchanges>
         </OrchestrationStep>
-        
         <!-- Demo: The following orchestration step is always executed. 
          This step reads any user attributes that we may not have received when authenticating using ESTS so they 
          include the AppCode MFA attributes 
@@ -994,7 +972,9 @@
             <ClaimsExchange Id="AADUserReadWithObjectId" TechnicalProfileReferenceId="AAD-UserReadUsingObjectId" />
           </ClaimsExchanges>
         </OrchestrationStep>
-        
+        <!-- Demo: The following orchestration step is executed only for unregistered 
+        accounts (new created account or if user cancel the sign-up process). 
+        It generates a verification app secret key for the user (none interactive step). -->
         <OrchestrationStep Order="7" Type="ClaimsExchange">
           <Preconditions>
             <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
@@ -1003,102 +983,60 @@
             </Precondition>
           </Preconditions>
           <ClaimsExchanges>
-            <ClaimsExchange Id="FIDORegisterAPI" TechnicalProfileReferenceId="FIDO-RegisterAPI" />
+            <ClaimsExchange Id="AppFactorGenerateTotpWebHook" TechnicalProfileReferenceId="AppFactor-GenerateTotpWebHook" />
           </ClaimsExchanges>
         </OrchestrationStep>
-
-        <!-- AJB TO HERE -->
-        
         <!-- Demo: The following orchestration step is executed only for unregistered 
+        accounts (new created account or if user cancel the sign-up process). 
         It registers a verification app through QR code that mobile authentication app should scan. -->
         <OrchestrationStep Order="8" Type="ClaimsExchange">
-          
-          <!--
           <Preconditions>
             <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
               <Value>strongAuthenticationAppQRCodeBitmap</Value>
               <Action>SkipThisOrchestrationStep</Action>
             </Precondition>
           </Preconditions>
-          -->
-
           <ClaimsExchanges>
-            <ClaimsExchange Id="FIDORegisterExchange" TechnicalProfileReferenceId="Fido-Register" />
+            <ClaimsExchange Id="AppFactorRegisterExchange" TechnicalProfileReferenceId="AppFactor-Register" />
           </ClaimsExchanges>
         </OrchestrationStep>
-
-        <OrchestrationStep Order="9" Type="ClaimsExchange">
-          <Preconditions>
-            <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
-              <Value>extension_StrongAuthenticationAppSecretKey</Value>
-              <Action>SkipThisOrchestrationStep</Action>
-            </Precondition>
-          </Preconditions>
-          <ClaimsExchanges>
-            <ClaimsExchange Id="FIDOLoginAPI" TechnicalProfileReferenceId="FIDO-LoginAPI" />
-          </ClaimsExchanges>
-        </OrchestrationStep>
-
-
-        <OrchestrationStep Order="10" Type="ClaimsExchange">
-          
-          <!--
-          <Preconditions>
-            <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
-              <Value>strongAuthenticationAppQRCodeBitmap</Value>
-              <Action>SkipThisOrchestrationStep</Action>
-            </Precondition>
-          </Preconditions>
-          -->
-
-          <ClaimsExchanges>
-            <ClaimsExchange Id="FIDOLoginExchange" TechnicalProfileReferenceId="Fido-Login" />
-          </ClaimsExchanges>
-        </OrchestrationStep>
-
-
-
-        <!--
         <OrchestrationStep Order="9" Type="ClaimsExchange">
           <ClaimsExchanges>
             <ClaimsExchange Id="AuditLogData" TechnicalProfileReferenceId="AzureFunctions-LookUpAuditLog" />
           </ClaimsExchanges>
         </OrchestrationStep>
-        -->
-
         <!-- The following orchestration step is executed only for registered accounts.
-        It asks the user to provide the TOTP code and verifies the provided code (using validation technical profile). -->        
-        <!--
-        <OrchestrationStep Order="9" Type="ClaimsExchange">
+        It asks the user to provide the TOTP code and verifies the provided code (using validation technical profile). -->
+        <OrchestrationStep Order="10" Type="ClaimsExchange">
           <Preconditions>
             <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
               <Value>riskState</Value>
               <Value>notAtRisk</Value>
               <Action>SkipThisOrchestrationStep</Action>
             </Precondition>
+            <!-- 
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+              <Value>strongAuthenticationAppQRCodeBitmap</Value>
+              <Action>SkipThisOrchestrationStep</Action>          
+            </Precondition>
+            -->
           </Preconditions>
           <ClaimsExchanges>
-            <ClaimsExchange Id="FIDOLogin" TechnicalProfileReferenceId="FIDO-Login" />
+            <ClaimsExchange Id="AppFactorChallengeExchange" TechnicalProfileReferenceId="AppFactor-Challenge" />
           </ClaimsExchanges>
-        </OrchestrationStep>  
-        -->
-
+        </OrchestrationStep>
         <!-- The following orchestration step is always executed.
         It updates the verification app time step matched for a given user in the Azure Active Directory.
         An error is raised if the user does not exist. -->
-        <!--
-        <OrchestrationStep Order="9" Type="ClaimsExchange">
+        <OrchestrationStep Order="11" Type="ClaimsExchange">
           <ClaimsExchanges>
             <ClaimsExchange Id="AADWriteUserAppCodeByObjectId" TechnicalProfileReferenceId="AAD-WriteUserAppCodeByObjectId" />
           </ClaimsExchanges>
         </OrchestrationStep>
-        -->
-        
-        <OrchestrationStep Order="11" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
+        <OrchestrationStep Order="12" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="Saml2AssertionIssuer" />
       </OrchestrationSteps>
       <ClientDefinition ReferenceId="DefaultWeb" />
     </UserJourney>
-
     <!--
   <UserJourney Id="ProfileEdit">
     <OrchestrationSteps>
