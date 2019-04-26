@@ -631,70 +631,89 @@
         </table>
     </div>
 
+    <!--
+    <script src="https://moeditpoc.b2clogin.com/static/bundles/jquery-bundle-1.10.2.min.js?slice=001-000&dc=SYD" crossorigin="anonymous"></script>
+    <script>"use strict"; $(document).ready(function () { if (navigator.userAgent.match(/IEMobile\/10\.0/)) { var t = document.createElement("style"); t.appendChild(document.createTextNode("@@-ms-viewport{width:auto!important}")), t.appendChild(document.createTextNode("@@-ms-viewport{height:auto!important}")), document.getElementsByTagName("head")[0].appendChild(t) } if (navigator.userAgent.match(/MSIE 10/i)) { var e = $("#footer_links_container"); $(e).css("padding-top", "100px") } var o, i = $("#background_background_image"), n = function () { document.body.style.overflow = "hidden", ($(window).width() - 500) / $(window).height() < o ? (i.height($(window).height()), i.width("auto")) : (i.width($(window).width() - 500), i.height("auto")), document.body.style.overflow = "" }; $("<img>").attr("src", i.attr("src")).load(function () { o = this.width / this.height, n() }), $(window).resize(function () { n() }), "undefined" != typeof $("#MicrosoftAccountExchange") && $("#MicrosoftAccountExchange").text("Microsoft"), $("*").removeAttr("placeholder") });</script>
+    -->
 
-        <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.3.1.min.js" crossorigin="anonymous" integrity="sha384-tsQFqpEReu7ZLhBV2VZlAu7zcOV+rXbYlF2cqB8txI/8aZajjp4Bqd+V6D5IgvKT"></script>
-        <script src="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/bootstrap.min.js" crossorigin="anonymous" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"></script>
-        <script src="https://cdn.rawgit.com/mgalante/jquery.redirect/master/jquery.redirect.js"></script>
+    <script>var challenge = $('#fidoChallenge').attr('value');
+        var relyingPartyId = $('#fidoRelyingPartyId').attr('value');
+        var username = $('#fidoUsername').attr('value');
 
-        <script>"use strict";
-            $(document).ready(function () {
-                if (navigator.userAgent.match(/IEMobile\/10\.0/))
-                {
-                    var t = document.createElement("style");
-                    t.appendChild(document.createTextNode("@@-ms-viewport{width:auto!important}")),
-                    t.appendChild(document.createTextNode("@@-ms-viewport{height:auto!important}")), document.getElementsByTagName("head")[0].appendChild(t)
+        relyingPartyId = "moeditpoc.b2clogin.com";
+
+        console.log("Challenge " + challenge);
+        console.log("relyingPartyId " + relyingPartyId);
+        console.log("username " + username);
+
+        var byteCharacters = atob(challenge);
+        var byteNumbers = new Array(byteCharacters.length);
+        for (var i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        var challenge = new Uint8Array(byteNumbers);
+
+        // Request ES256 algorithm
+        var pubKeyCredParams = [
+            {
+                type: "public-key",
+                alg: -7
+            }
+        ];
+
+        // Relying party details
+        var rp = {
+            name: "Test Site",
+            id: relyingPartyId
+        };
+
+        // User handle
+        var user = {
+            name: username,
+            displayName: username,
+            id: new TextEncoder("utf-8").encode(username)
+        };
+
+        var publicKey = { challenge, pubKeyCredParams, rp, user };
+
+        navigator.credentials.create({ publicKey }).then((credentials) => {
+            console.log(credentials);
+
+            var publicKeyCredentialToJSON = (pubKeyCred) => {
+                if (pubKeyCred instanceof Array) {
+                    let arr = [];
+                    for (let i of pubKeyCred)
+                        arr.push(publicKeyCredentialToJSON(i));
+
+                    return arr;
                 }
 
-                if (navigator.userAgent.match(/MSIE 10/i)) {
-                    var e = $("#footer_links_container");
-                    $(e).css("padding-top", "100px")
+                if (pubKeyCred instanceof ArrayBuffer) {
+                    return btoa(String.fromCharCode.apply(null, new Uint8Array(pubKeyCred)));
                 }
 
-                var o,
-                i = $("#background_background_image"),
-                n = function ()
-                {
-                    document.body.style.overflow = "hidden",
-                    ($(window).width() - 500) / $(window).height() < o ? (i.height($(window).height()),
-                    i.width("auto")) : (i.width($(window).width() - 500),
-                    i.height("auto")), document.body.style.overflow = ""
-                };
+                if (pubKeyCred instanceof Object) {
+                    let obj = {};
 
-                $("<img>").attr("src", i.attr("src")),
-                $(window).resize(function () {
-                    n() }
-                ),
-                "undefined" != typeof $("#MicrosoftAccountExchange") && $("#MicrosoftAccountExchange").text("Microsoft"),
-                $("*").removeAttr("placeholder")
-            });
-        </script>
+                    for (let key in pubKeyCred) {
+                        obj[key] = publicKeyCredentialToJSON(pubKeyCred[key]);
+                    }
 
-        <script>
-            $(function () {
-                var $strongAuthenticationAppQRCodeBitmapImage = $('#strongAuthenticationAppQRCodeBitmapImage');
-                var $strongAuthenticationAppQRCodeBitmapTextInput = $('#strongAuthenticationAppQRCodeBitmap');
-                $strongAuthenticationAppQRCodeBitmapImage.attr('src', 'data:image/png;base64,' + $strongAuthenticationAppQRCodeBitmapTextInput.val());
-                $('#attributeList ul li:nth-child(2)').remove();
-            });
-        </script>
+                    return obj;
+                }
 
-        <script>// Update challenge string to expected Uint8Array
+                return pubKeyCred;
+            }
 
-            var urlParams = new URLSearchParams(window.location.search);
-            var returnUrl = urlParams.get('returnUrl');
+            var credentialsAsJson = publicKeyCredentialToJSON(credentials);
+            console.log(credentialsAsJson);
 
-            var keyId = urlParams.get('kid');
-            var challenge = urlParams.get('challenge');
-            var relyingPartyId = urlParams.get('relyingPartyId');
+            var credentialsAsJsonString = btoa(JSON.stringify(credentialsAsJson));
+            console.log(credentialsAsJsonString);
 
-            // User handle
-            var json = null;
-            var UsernameModel = {
-                ReturnUrl: returnUrl,
-                Username: keyId
-            };
-        </script>
+            $('#fidoRegisterCallbackJSON').attr('value', credentialsAsJsonString);
 
+        });</script>
 
 </body>
 </html>

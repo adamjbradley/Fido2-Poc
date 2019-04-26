@@ -617,8 +617,8 @@
                     <td id="panel_center">
                         <div class="inner_container">
                             <div class="api_container normaltext">
-                                <h1>Register</h1>
-                                <p>Please use your FIDO authenticator...</p>
+                                <h1>Sample Page</h1>
+                                <p>Just an Azure AD B2C Sample Page...</p>
 
                                 <div id="api"></div>
 
@@ -632,30 +632,28 @@
     </div>
 
     <!--
-    <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.3.1.min.js" crossorigin="anonymous" integrity="sha384-tsQFqpEReu7ZLhBV2VZlAu7zcOV+rXbYlF2cqB8txI/8aZajjp4Bqd+V6D5IgvKT"></script>
-    <script src="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/bootstrap.min.js" crossorigin="anonymous" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"></script>
-    <script src="https://cdn.rawgit.com/mgalante/jquery.redirect/master/jquery.redirect.js"></script>
+    <script src="https://moeditpoc.b2clogin.com/static/bundles/jquery-bundle-1.10.2.min.js?slice=001-000&dc=SYD" crossorigin="anonymous"></script>
+    <script>"use strict"; $(document).ready(function () { if (navigator.userAgent.match(/IEMobile\/10\.0/)) { var t = document.createElement("style"); t.appendChild(document.createTextNode("@@-ms-viewport{width:auto!important}")), t.appendChild(document.createTextNode("@@-ms-viewport{height:auto!important}")), document.getElementsByTagName("head")[0].appendChild(t) } if (navigator.userAgent.match(/MSIE 10/i)) { var e = $("#footer_links_container"); $(e).css("padding-top", "100px") } var o, i = $("#background_background_image"), n = function () { document.body.style.overflow = "hidden", ($(window).width() - 500) / $(window).height() < o ? (i.height($(window).height()), i.width("auto")) : (i.width($(window).width() - 500), i.height("auto")), document.body.style.overflow = "" }; $("<img>").attr("src", i.attr("src")).load(function () { o = this.width / this.height, n() }), $(window).resize(function () { n() }), "undefined" != typeof $("#MicrosoftAccountExchange") && $("#MicrosoftAccountExchange").text("Microsoft"), $("*").removeAttr("placeholder") });</script>
     -->
 
-    <script src="https://moeditpoc.b2clogin.com/static/bundles/jquery-bundle-1.10.2.min.js?slice=001-000&dc=SYD" crossorigin="anonymous"></script>
+    <script>var challenge = $('#fidoChallenge').attr('value');
+        var relyingPartyId = $('#fidoRelyingPartyId').attr('value');
+        var username = $('#fidoUsername').attr('value');
+        var keyId = $('#fidoKeyId').attr('value');
+        var returnUrl = null;
 
-    <script>// Update challenge string to expected Uint8Array
+        relyingPartyId = "moeditpoc.b2clogin.com";
 
-        var urlParams = new URLSearchParams(window.location.search);
-        var username = urlParams.get('username');
-        var challenge = urlParams.get('challenge');
-        var relyingPartyId = urlParams.get('relyingPartyId');
+        console.log("Challenge " + challenge);
+        console.log("relyingPartyId " + relyingPartyId);
+        console.log("username " + username);
 
+        // User handle
         var json = null;
-        //jQuery.ajax({
-        //    url: 'https://fidowebauthnpoc.azurewebsites.net/api/AccountAPI/FidoRegister?username=' + username,
-        //    success: function (result) {
-        //        if (result.isOk == false) alert(result.message);
-        //        var stringified = JSON.stringify(result);
-        //        json = JSON.parse(stringified);
-        //    },
-        //    async: false
-        //});
+        var UsernameModel = {
+            ReturnUrl: returnUrl,
+            Username: keyId
+        };
 
         var byteCharacters = atob(challenge);
         var byteNumbers = new Array(byteCharacters.length);
@@ -664,30 +662,30 @@
         }
         var challenge = new Uint8Array(byteNumbers);
 
-        // Request ES256 algorithm
-        var pubKeyCredParams = [
+        // Update key ID string to expected Uint8Array
+        var raw = window.atob(keyId);
+        var rawLength = raw.length;
+        var key = new Uint8Array(new ArrayBuffer(rawLength));
+
+        for (i = 0; i < rawLength; i++) {
+            key[i] = raw.charCodeAt(i);
+        }
+
+        // Key details
+        var allowCredentials = [
             {
                 type: "public-key",
-                alg: -7
+                id: key,
+                transports: ["usb"]
             }
         ];
 
         // Relying party details
-        var rp = {
-            name: "Test Site",
-            id: relyingPartyId
-        };
+        var rpId = relyingPartyId;
 
-        // User handle
-        var user = {
-            name: username,
-            displayName: username,
-            id: new TextEncoder("utf-8").encode(username)
-        };
+        var publicKey = { challenge, allowCredentials, rpId };
 
-        var publicKey = { challenge, pubKeyCredParams, rp, user };
-
-        navigator.credentials.create({ publicKey }).then((credentials) => {
+        navigator.credentials.get({ publicKey }).then((credentials) => {
             console.log(credentials);
 
             var publicKeyCredentialToJSON = (pubKeyCred) => {
@@ -719,21 +717,12 @@
             var credentialsAsJson = publicKeyCredentialToJSON(credentials);
             console.log(credentialsAsJson);
 
-            var credentialsAsJsonString = '"' + btoa(JSON.stringify(credentialsAsJson)) + '"';
+            var credentialsAsJsonString = btoa(JSON.stringify(credentialsAsJson));
             console.log(credentialsAsJsonString);
 
-            $.ajax({
-                url: 'https://55bcad0a.ngrok.io/AccountAPI/RegisterCallbackJSON',
-                type: 'POST',
-                contentType: 'application/json',
-                data: credentialsAsJsonString,
-                success: function (result) {
-                    console.log(result);
-                    alert("Successfully registered " + username);
-                }
-            });
-        });
+            $('#fidoLoginCallbackJSON').attr('value', credentialsAsJsonString);
 
-    </script>
+        });</script>
+
 </body>
 </html>

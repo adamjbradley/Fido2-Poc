@@ -6,18 +6,20 @@ using System.Threading.Tasks;
 
 namespace ScottBrady91.Fido2.Poc.Models
 {
-    public class InputClaimsModel
+    public class CallbackClaimsModel
     {
-        public string Username { get; set; }
-
+        public string callback { get; set; }
+    
         public override string ToString()
         {
             return JsonConvert.SerializeObject(this);
         }
 
-        public static InputClaimsModel Parse(string JSON)
+        public static CallbackClaimsModel Parse(string JSON)
         {
-            return JsonConvert.DeserializeObject(JSON, typeof(InputClaimsModel)) as InputClaimsModel;
+            return JsonConvert.DeserializeObject(JSON, typeof(CallbackClaimsModel)) as CallbackClaimsModel;
         }
     }
 }
+
+
