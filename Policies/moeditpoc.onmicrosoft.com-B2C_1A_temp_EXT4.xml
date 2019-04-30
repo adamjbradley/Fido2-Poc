@@ -546,8 +546,8 @@
           <Metadata>
             <Item Key="ServiceUrl">https://fidowebauthnpoc.azurewebsites.net/AccountAPI/FidoRegister</Item>
             <!--
-            <Item Key="ServiceUrl">https://fidowebauthnpoc.azurewebsites.net/AccountAPI/FidoRegister</Item>            
-            <Item Key="ServiceUrl">https://5b1fb279.ngrok.io/AccountAPI/FidoRegister</Item>            
+            <Item Key="ServiceUrl">https://fidowebauthnpoc.azurewebsites.net/AccountAPI/FidoRegister</Item>    
+            <Item Key="ServiceUrl">https://45fc3c68.ngrok.io/AccountAPI/FidoRegister</Item>    
             -->
             <Item Key="AuthenticationType">None</Item>
             <Item Key="SendClaimsIn">Body</Item>
@@ -570,7 +570,7 @@
             <Item Key="ServiceUrl">https://fidowebauthnpoc.azurewebsites.net/AccountAPI/RegisterCallbackJSON</Item>
             <!--
             <Item Key="ServiceUrl">https://fidowebauthnpoc.azurewebsites.net/AccountAPI/RegisterCallbackJSON</Item>
-            <Item Key="ServiceUrl">https://5b1fb279.ngrok.io/AccountAPI/RegisterCallbackJSON</Item>
+            <Item Key="ServiceUrl">https://45fc3c68.ngrok.io/AccountAPI/RegisterCallbackJSON</Item>
             -->
             <Item Key="AuthenticationType">None</Item>
             <Item Key="SendClaimsIn">Body</Item>
@@ -592,7 +592,7 @@
             <Item Key="ServiceUrl">https://fidowebauthnpoc.azurewebsites.net/AccountAPI/FidoLogin</Item>
             <!--
             <Item Key="ServiceUrl">https://fidowebauthnpoc.azurewebsites.net/AccountAPI/FidoLogin</Item>
-            <Item Key="ServiceUrl">https://5b1fb279.ngrok.io/AccountAPI/FidoLogin</Item>
+            <Item Key="ServiceUrl">https://45fc3c68.ngrok.io/AccountAPI/FidoLogin</Item>
             -->    
             <Item Key="AuthenticationType">None</Item>
             <Item Key="SendClaimsIn">Body</Item>
@@ -614,7 +614,7 @@
             <Item Key="ServiceUrl">https://fidowebauthnpoc.azurewebsites.net/AccountAPI/LoginCallbackJSON</Item>
             <!--
             <Item Key="ServiceUrl">https://fidowebauthnpoc.azurewebsites.net/AccountAPI/LoginCallbackJSON</Item>
-            <Item Key="ServiceUrl">https://5b1fb279.ngrok.io/AccountAPI/LoginCallbackJSON</Item>
+            <Item Key="ServiceUrl">https://45fc3c68.ngrok.io/AccountAPI/LoginCallbackJSON</Item>
             -->
             <Item Key="AuthenticationType">None</Item>
             <Item Key="SendClaimsIn">Body</Item>
@@ -1375,13 +1375,15 @@
           </ClaimsExchanges>
         </OrchestrationStep>
 
+<!--
         <OrchestrationStep Order="4" Type="ClaimsExchange">
           <ClaimsExchanges>
             <ClaimsExchange Id="AADUserReadWithObjectId" TechnicalProfileReferenceId="AAD-UserReadUsingAlternativeSecurityId-NoError" />
           </ClaimsExchanges>
         </OrchestrationStep>
+-->
 
-        <OrchestrationStep Order="5" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
+        <OrchestrationStep Order="4" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
       </OrchestrationSteps>
       <ClientDefinition ReferenceId="DefaultWeb" />
     </UserJourney>

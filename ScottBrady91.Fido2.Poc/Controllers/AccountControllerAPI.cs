@@ -679,7 +679,8 @@ namespace ScottBrady91.Fido2.Poc.Controllers
                 // 17. the signature counter value adata.signCount is nonzero or the value stored in conjunction with credential’s id attribute is nonzero
                 if (user.Counter < counter)
                 {
-                    user.Counter = Convert.ToInt32(counter);
+                    //TODO AJB
+                    //user.Counter = Convert.ToInt32(counter);
 
                     return new B2CResponseModel { userMessage = "Login Success", status = (int)HttpStatusCode.OK, username = user.Username };
                 }
@@ -690,7 +691,7 @@ namespace ScottBrady91.Fido2.Poc.Controllers
             throw new Exception("Invalid Signature");
         }
 
-        [HttpGet("GetUser/{username}")]
+        [HttpGet("/AccountAPI/GetUser")]
         public ActionResult<User> GetUser([FromQuery] string Username)
         {
             /*
@@ -713,6 +714,14 @@ namespace ScottBrady91.Fido2.Poc.Controllers
         [HttpGet("/AccountAPI/GetUsers")]
         public IActionResult GetUsers([FromForm] UsernameModel model)
         {        
+            return Ok(Users);
+        }
+
+        [HttpGet("/AccountAPI/DeleteUsers")]
+        public IActionResult DeleteUsers([FromForm] UsernameModel model)
+        {
+            cache.Set("Users", new List<User>());
+            List<User> _Users = (List<User>)cache.Get("Users");
             return Ok(Users);
         }
 
