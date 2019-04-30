@@ -14,6 +14,10 @@ namespace ScottBrady91.Fido2.Poc.Models
         public string userMessage { get; set; }
 
         // Optional claims
+        public string oid { get; set; }
+        public string username { get; set; }
+
+        public B2CResponseModel() { }
 
         public B2CResponseModel(string userMessage, HttpStatusCode status)
         {

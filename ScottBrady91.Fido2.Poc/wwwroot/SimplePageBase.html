@@ -617,8 +617,7 @@
                     <td id="panel_center">
                         <div class="inner_container">
                             <div class="api_container normaltext">
-                                <h1>Sample Page</h1>
-                                <p>Just an Azure AD B2C Sample Page...</p>
+                                <h1>FIDO Registration Page</h1>
 
                                 <div id="api"></div>
 
@@ -630,13 +629,9 @@
             </tbody>
         </table>
     </div>
-
-    <!--
-    <script src="https://moeditpoc.b2clogin.com/static/bundles/jquery-bundle-1.10.2.min.js?slice=001-000&dc=SYD" crossorigin="anonymous"></script>
-    <script>"use strict"; $(document).ready(function () { if (navigator.userAgent.match(/IEMobile\/10\.0/)) { var t = document.createElement("style"); t.appendChild(document.createTextNode("@@-ms-viewport{width:auto!important}")), t.appendChild(document.createTextNode("@@-ms-viewport{height:auto!important}")), document.getElementsByTagName("head")[0].appendChild(t) } if (navigator.userAgent.match(/MSIE 10/i)) { var e = $("#footer_links_container"); $(e).css("padding-top", "100px") } var o, i = $("#background_background_image"), n = function () { document.body.style.overflow = "hidden", ($(window).width() - 500) / $(window).height() < o ? (i.height($(window).height()), i.width("auto")) : (i.width($(window).width() - 500), i.height("auto")), document.body.style.overflow = "" }; $("<img>").attr("src", i.attr("src")).load(function () { o = this.width / this.height, n() }), $(window).resize(function () { n() }), "undefined" != typeof $("#MicrosoftAccountExchange") && $("#MicrosoftAccountExchange").text("Microsoft"), $("*").removeAttr("placeholder") });</script>
-    -->
-
-    <script>var challenge = $('#fidoChallenge').attr('value');
+    
+    <script>
+        var challenge = $('#fidoChallenge').attr('value');
         var relyingPartyId = $('#fidoRelyingPartyId').attr('value');
         var username = $('#fidoUsername').attr('value');
 

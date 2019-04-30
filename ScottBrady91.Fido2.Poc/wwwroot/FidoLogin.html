@@ -724,16 +724,16 @@
 
                 return pubKeyCred;
             }
-
+            
             var credentialsAsJson = publicKeyCredentialToJSON(credentials);
             console.log(credentialsAsJson);
 
-            var credentialsAsJsonString = '"' + btoa(JSON.stringify(credentialsAsJson)) + '"';
-            console.log(credentialsAsJsonString)
+            var credentialsAsJsonString = btoa(JSON.stringify(credentialsAsJson));
+            console.log(credentialsAsJsonString);
 
             $.ajax({
                 //    url: 'https://fidowebauthnpoc.azurewebsites.net/AccountAPI/LoginCallback',
-                url: 'https://55bcad0a.ngrok.io/AccountAPI/LoginCallbackJSON',
+                url: 'https://28f5d715.ngrok.io/AccountAPI/LoginCallbackJSON',
                 type: 'POST',
                 contentType: 'application/json',
                 data: credentialsAsJsonString,

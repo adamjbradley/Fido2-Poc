@@ -617,8 +617,7 @@
                     <td id="panel_center">
                         <div class="inner_container">
                             <div class="api_container normaltext">
-                                <h1>Register</h1>
-                                <p>Please use your FIDO authenticator...</p>
+                                <h1>FIDO Registration Page</h1>
 
                                 <div id="api"></div>
 
@@ -631,31 +630,15 @@
         </table>
     </div>
 
-    <!--
-    <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.3.1.min.js" crossorigin="anonymous" integrity="sha384-tsQFqpEReu7ZLhBV2VZlAu7zcOV+rXbYlF2cqB8txI/8aZajjp4Bqd+V6D5IgvKT"></script>
-    <script src="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/bootstrap.min.js" crossorigin="anonymous" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"></script>
-    <script src="https://cdn.rawgit.com/mgalante/jquery.redirect/master/jquery.redirect.js"></script>
-    -->
+    <script>var challenge = $('#fidoChallenge').attr('value');
+        var relyingPartyId = $('#fidoRelyingPartyId').attr('value');
+        var username = $('#fidoUsername').attr('value');
 
-    <script src="https://moeditpoc.b2clogin.com/static/bundles/jquery-bundle-1.10.2.min.js?slice=001-000&dc=SYD" crossorigin="anonymous"></script>
+        relyingPartyId = "moeditpoc.b2clogin.com";
 
-    <script>// Update challenge string to expected Uint8Array
-
-        var urlParams = new URLSearchParams(window.location.search);
-        var username = urlParams.get('username');
-        var challenge = urlParams.get('challenge');
-        var relyingPartyId = urlParams.get('relyingPartyId');
-
-        var json = null;
-        //jQuery.ajax({
-        //    url: 'https://fidowebauthnpoc.azurewebsites.net/api/AccountAPI/FidoRegister?username=' + username,
-        //    success: function (result) {
-        //        if (result.isOk == false) alert(result.message);
-        //        var stringified = JSON.stringify(result);
-        //        json = JSON.parse(stringified);
-        //    },
-        //    async: false
-        //});
+        console.log("Challenge " + challenge);
+        console.log("relyingPartyId " + relyingPartyId);
+        console.log("username " + username);
 
         var byteCharacters = atob(challenge);
         var byteNumbers = new Array(byteCharacters.length);
@@ -715,23 +698,16 @@
 
                 return pubKeyCred;
             }
-            
+
             var credentialsAsJson = publicKeyCredentialToJSON(credentials);
             console.log(credentialsAsJson);
 
             var credentialsAsJsonString = btoa(JSON.stringify(credentialsAsJson));
-            console.log(credentialsAsJsonString);                                            
+            console.log(credentialsAsJsonString);
 
-            $.ajax({
-                url: 'https://28f5d715.ngrok.io/AccountAPI/RegisterCallbackJSON',
-                type: 'POST',
-                contentType: 'application/json',
-                data: credentialsAsJsonString,
-                success: function (result) {
-                    console.log(result);
-                    alert("Successfully registered " + username);
-                }
-            });
+            $('#fidoRegisterCallbackJSON').attr('value', credentialsAsJsonString);
+
         });</script>
+
 </body>
 </html>

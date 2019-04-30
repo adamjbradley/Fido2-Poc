@@ -412,6 +412,25 @@ namespace ScottBrady91.Fido2.Poc.Controllers
             return Ok(output);
         }
 
+        [HttpPost("/AccountAPI/LoginJSON")]
+        public IActionResult FidoLoginJSON([FromForm] UsernameModel model)
+        {
+            // generate challenge
+            var challenge = CryptoRandom.CreateRandomKeyString(16);
+
+            // store challenge & key ID for later use
+            tempData.SaveTempData(HttpContext,
+                new Dictionary<string, object> { { "challenge", challenge } });
+
+            List<PublicKey> publicKeys = new List<PublicKey>();
+            foreach (User user in Users)
+            {
+                publicKeys.Add(new PublicKey(user.CredentialId));
+            }
+
+            return Ok(new AuthRequest { challenge = challenge, rpId = RelyingPartyId, allowCredentials = publicKeys });
+        }
+
         [HttpPost("/AccountAPI/LoginCallbackJSON")]
         public async Task<ActionResult> LoginCallbackJSON()
         {
@@ -655,14 +674,14 @@ namespace ScottBrady91.Fido2.Poc.Controllers
 
             var isValid = ecDsa.VerifyData(sigBase, DeserializeSignature(sig), HashAlgorithmName.SHA256);
 
-            RequestResult rr = new RequestResult();
             if (isValid)
             {
                 // 17. the signature counter value adata.signCount is nonzero or the value stored in conjunction with credential’s id attribute is nonzero
                 if (user.Counter < counter)
                 {
                     user.Counter = Convert.ToInt32(counter);
-                    return new B2CResponseModel(JsonConvert.SerializeObject(rr), System.Net.HttpStatusCode.OK);
+
+                    return new B2CResponseModel { userMessage = "Login Success", status = (int)HttpStatusCode.OK, username = user.Username };
                 }
 
                 throw new Exception("Possible cloned authenticator");
@@ -689,6 +708,12 @@ namespace ScottBrady91.Fido2.Poc.Controllers
             }
 
             return null;
+        }
+
+        [HttpGet("/AccountAPI/GetUsers")]
+        public IActionResult GetUsers([FromForm] UsernameModel model)
+        {        
+            return Ok(Users);
         }
 
         private byte[] DeserializeSignature(string signature)
