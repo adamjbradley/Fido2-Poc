@@ -1,0 +1,962 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<TrustFrameworkPolicy 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+  xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" 
+  PolicySchemaVersion="0.3.0.0" 
+  TenantId="moeditpoc.onmicrosoft.com" 
+  PolicyId="B2C_1A_TrustFrameworkExtensions_v2" 
+  PublicPolicyUri="http://moeditpoc.onmicrosoft.com/B2C_1A_TrustFrameworkExtensions_v2"
+  TenantObjectId="d906d687-7b26-4409-b5ad-c7507b5d7537"
+  DeploymentMode="Development" 
+  UserJourneyRecorderEndpoint="urn:journeyrecorder:applicationinsights" 
+>
+
+<BasePolicy>
+  <TenantId>moeditpoc.onmicrosoft.com</TenantId>
+  <PolicyId>B2C_1A_TrustFrameworkBase_v2</PolicyId>
+</BasePolicy>
+
+ <BuildingBlocks>
+<ClaimsSchema>
+  
+    <!-- FIDO WebAuthN Begin -->
+    <ClaimType Id="extension_WebAuthNRegistered">
+      <DisplayName></DisplayName>
+      <DataType>string</DataType>
+      <UserInputType>Readonly</UserInputType>
+    </ClaimType>
+    <ClaimType Id="fidoUsername">
+      <DisplayName>FIDO Username</DisplayName>
+      <DataType>string</DataType>
+      <UserInputType>Readonly</UserInputType>
+    </ClaimType>
+    <ClaimType Id="fidoChallenge">
+      <DisplayName>FIDO Challenge</DisplayName>
+      <DataType>string</DataType>
+      <UserInputType>Readonly</UserInputType>
+    </ClaimType>
+    <ClaimType Id="fidoRelyingPartyId">
+      <DisplayName>FIDO Relying Party Id</DisplayName>
+      <DataType>string</DataType>
+      <UserInputType>Readonly</UserInputType>
+    </ClaimType>
+    <ClaimType Id="fidoKeyId">
+      <DisplayName>FIDO Key Id</DisplayName>
+      <DataType>string</DataType>
+      <UserInputType>Readonly</UserInputType>
+    </ClaimType>
+    <ClaimType Id="fidoRegisterCallbackJSON">
+      <DisplayName>FIDO Registration Callback JSON</DisplayName>
+      <DataType>string</DataType>
+      <UserInputType>TextBox</UserInputType>
+    </ClaimType>
+    <ClaimType Id="fidoLoginCallbackJSON">
+      <DisplayName>FIDO Login Callback JSON</DisplayName>
+      <DataType>string</DataType>
+      <UserInputType>TextBox</UserInputType>
+    </ClaimType>
+    <!-- FIDO WebAuthN End -->
+
+  </ClaimsSchema>
+
+    <ContentDefinitions>
+      <!-- AJB FIDO WebAuthN -->
+      <ContentDefinition Id="api.idpselections">
+        <LoadUri>https://b2cdemofiles.blob.core.windows.net/b2c/SimplePage.html</LoadUri>
+        <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+        <DataUri>urn:com:microsoft:aad:b2c:elements:contract:unifiedssp:1.0.0</DataUri>
+        <Metadata>
+          <Item Key="DisplayName">UNIFYAdvantage™ - Select Identity Provider</Item>
+          <Item Key="language.intro">Sign in</Item>
+        </Metadata>
+      </ContentDefinition>
+      <ContentDefinition Id="api.selfasserted.fido.registration">
+        <!--<LoadUri>https://b2cdemofiles.blob.core.windows.net/b2c/SimplePageBase.html</LoadUri>-->
+        <LoadUri>https://fidowebauthnpoc.azurewebsites.net/SimplePageBaseRegistration.html</LoadUri>
+        <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+        <DataUri>urn:com:microsoft:aad:b2c:elements:contract:selfasserted:1.1.0</DataUri>
+        <Metadata>
+          <Item Key="DisplayName">FIDO WebAuthN Register</Item>
+        </Metadata>
+      </ContentDefinition>
+      <ContentDefinition Id="api.selfasserted.fido.login">
+        <!--<LoadUri>https://b2cdemofiles.blob.core.windows.net/b2c/SimplePageBaseLogin.html</LoadUri>-->
+        <LoadUri>https://fidowebauthnpoc.azurewebsites.net/SimplePageBaseLogin.html</LoadUri>
+        <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+        <DataUri>urn:com:microsoft:aad:b2c:elements:contract:selfasserted:1.1.0</DataUri>
+        <Metadata>
+          <Item Key="DisplayName">FIDO WebAuthN Login</Item>
+        </Metadata>
+      </ContentDefinition>
+      <ContentDefinition Id="api.selfasserted.fido.loginla">
+        <!--
+        <LoadUri>https://b2cdemofiles.blob.core.windows.net/b2c/SimplePageBaseLoginLA.html</LoadUri>
+        <LoadUri>https://fidowebauthnpoc.azurewebsites.net/SimplePageBaseLoginLA.html</LoadUri>
+        -->
+        <LoadUri>https://b2cdemofiles.blob.core.windows.net/b2c/SimplePageBaseLoginLA.html</LoadUri>
+        <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+        <DataUri>urn:com:microsoft:aad:b2c:elements:contract:selfasserted:1.1.0</DataUri>
+        <Metadata>
+          <Item Key="DisplayName">FIDO WebAuthN Login</Item>
+        </Metadata>
+      </ContentDefinition>
+
+      <ContentDefinition Id="api.fido.signuporsignin">
+        <LoadUri>https://fidowebauthnpoc.azurewebsites.net/SimplePageBaseLoginLA.html</LoadUri>
+        <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+        <DataUri>urn:com:microsoft:aad:b2c:elements:contract:unifiedssp:1.0.0</DataUri>
+        <Metadata>
+          <Item Key="DisplayName">UNIFYAdvantage™ - Signin</Item>
+        </Metadata>
+        <!--<LocalizedResourcesReferences MergeBehavior="Prepend">
+					<LocalizedResourcesReference Language="en" Url="https://bing.com" LocalizedResourcesReferenceId="api.idpselection.signupsignin.en" />
+				</LocalizedResourcesReferences>	-->
+      </ContentDefinition>
+
+      <ContentDefinition Id="api.localaccountsignup">
+        <LoadUri>https://fidowebauthnpoc.azurewebsites.net/SimplePage.html</LoadUri>
+        <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+        <DataUri>urn:com:microsoft:aad:b2c:elements:contract:selfasserted:1.1.0</DataUri>
+        <Metadata>
+          <Item Key="DisplayName">Local account sign up page</Item>
+        </Metadata>
+      </ContentDefinition>
+
+      <ContentDefinition Id="api.selfasserted.profileupdate">
+        <LoadUri>https://fidowebauthnpoc.azurewebsites.net/SimplePage.html</LoadUri>
+        <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+        <DataUri>urn:com:microsoft:aad:b2c:elements:contract:selfasserted:1.1.0</DataUri>
+        <Metadata>
+          <Item Key="DisplayName">Collect information from user page</Item>
+        </Metadata>
+      </ContentDefinition>
+
+      <ContentDefinition Id="api.selfasserted">
+        <LoadUri>https://fidowebauthnpoc.azurewebsites.net/SimplePage.html</LoadUri>
+        <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+        <DataUri>urn:com:microsoft:aad:b2c:elements:contract:selfasserted:1.1.0</DataUri>
+        <Metadata>
+          <Item Key="DisplayName">Collect information from user page</Item>
+        </Metadata>
+      </ContentDefinition>
+
+      <ContentDefinition Id="api.localaccountpasswordreset">
+        <LoadUri>https://fidowebauthnpoc.azurewebsites.net/SimplePage.html</LoadUri>
+        <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+        <DataUri>urn:com:microsoft:aad:b2c:elements:contract:selfasserted:1.1.0</DataUri>
+        <Metadata>
+          <Item Key="DisplayName">Local account change password page</Item>
+        </Metadata>
+      </ContentDefinition>
+
+      <ContentDefinition Id="api.phonefactor">
+        <LoadUri>~/tenant/default/multifactor-1.0.0.cshtml</LoadUri>
+        <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+        <DataUri>urn:com:microsoft:aad:b2c:elements:contract:multifactor:1.1.0</DataUri>
+        <Metadata>
+          <Item Key="DisplayName">Multi-factor authentication page</Item>
+        </Metadata>
+      </ContentDefinition>
+
+    </ContentDefinitions>
+
+</BuildingBlocks>
+
+  <ClaimsProviders>
+
+    <ClaimsProvider>
+      <DisplayName>Facebook</DisplayName>
+      <TechnicalProfiles>
+        <TechnicalProfile Id="Facebook-OAUTH">
+          <Metadata>
+            <Item Key="client_id">facebook_clientid</Item>
+            <Item Key="scope">email public_profile</Item>
+            <Item Key="ClaimsEndpoint">https://graph.facebook.com/me?fields=id,first_name,last_name,name,email</Item>
+          </Metadata>
+        </TechnicalProfile>
+      </TechnicalProfiles>
+    </ClaimsProvider>
+
+    <ClaimsProvider>
+      <DisplayName>Local Account SignIn</DisplayName>
+      <TechnicalProfiles>
+         <TechnicalProfile Id="login-NonInteractive">
+          <Metadata>
+            <Item Key="client_id">6664bb8b-a38d-4535-93c4-cf2f0f0edad8</Item>
+            <Item Key="IdTokenAudience">6664bb8b-a38d-4535-93c4-cf2f0f0edad8</Item>
+          </Metadata>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="client_id" DefaultValue="6664bb8b-a38d-4535-93c4-cf2f0f0edad8" />
+            <InputClaim ClaimTypeReferenceId="resource_id" PartnerClaimType="resource" DefaultValue="6664bb8b-a38d-4535-93c4-cf2f0f0edad8" />
+          </InputClaims>
+        </TechnicalProfile>
+      </TechnicalProfiles>
+    </ClaimsProvider>
+
+    <!--Required Claims Providers-->
+    <ClaimsProvider>
+      <Domain>google.com</Domain>
+      <DisplayName>Google Template</DisplayName>
+      <TechnicalProfiles>
+        <TechnicalProfile Id="IDP-Google-OAUTH">
+          <DisplayName>Google</DisplayName>
+          <Description>Login with your Google Account</Description>
+          <Protocol Name="OAuth2" />
+          <Metadata>
+            <Item Key="ProviderName">google</Item>
+            <Item Key="authorization_endpoint">https://accounts.google.com/o/oauth2/auth</Item>
+            <Item Key="AccessTokenEndpoint">https://accounts.google.com/o/oauth2/token</Item>
+            <Item Key="ClaimsEndpoint">https://www.googleapis.com/oauth2/v1/userinfo</Item>
+            <Item Key="scope">email</Item>
+            <Item Key="HttpBinding">POST</Item>
+            <Item Key="UsePolicyInRedirectUri">0</Item>
+            <Item Key="client_id">467844194187-06te3339igutr8du7edfbsk4pld8topo.apps.googleusercontent.com</Item>
+          </Metadata>
+          <CryptographicKeys>
+            <Key Id="client_secret" StorageReferenceId="B2C_1A_GoogleSecret" />
+          </CryptographicKeys>
+          <InputClaims />
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="issuerUserId" PartnerClaimType="oid" />
+            <!-- AJB-->
+            <!--
+            <OutputClaim ClaimTypeReferenceId="UserId" PartnerClaimType="oid" />
+            -->
+            <OutputClaim ClaimTypeReferenceId="email" PartnerClaimType="email" />
+            <OutputClaim ClaimTypeReferenceId="givenName" PartnerClaimType="given_name" />
+            <OutputClaim ClaimTypeReferenceId="surname" PartnerClaimType="family_name" />
+            <OutputClaim ClaimTypeReferenceId="displayName" PartnerClaimType="name" />
+            <OutputClaim ClaimTypeReferenceId="identityProvider" DefaultValue="Google" />
+            <OutputClaim ClaimTypeReferenceId="authenticationSource" DefaultValue="socialIdpAuthentication" />
+            <OutputClaim ClaimTypeReferenceId="userPrincipalName" PartnerClaimType="email" />
+            <OutputClaim ClaimTypeReferenceId="IssuerUserId" PartnerClaimType="email" />
+            <!-- 
+            <OutputClaim ClaimTypeReferenceId="upn" PartnerClaimType="email" />
+            -->
+            <OutputClaim ClaimTypeReferenceId="authenticationSource" DefaultValue="socialIdpAuthentication" />
+            <OutputClaim ClaimTypeReferenceId="email" />
+          </OutputClaims>
+          <OutputClaimsTransformations>
+            <OutputClaimsTransformation ReferenceId="CreateRandomUPNUserName" />
+            <OutputClaimsTransformation ReferenceId="CreateUserPrincipalName" />
+            <OutputClaimsTransformation ReferenceId="CreateAlternativeSecurityId" />
+            <OutputClaimsTransformation ReferenceId="CreateSubjectClaimFromAlternativeSecurityId" />
+          </OutputClaimsTransformations>
+          <UseTechnicalProfileForSessionManagement ReferenceId="SM-SocialLogin" />
+        </TechnicalProfile>
+      </TechnicalProfiles>
+    </ClaimsProvider>
+
+		<ClaimsProvider>
+			<DisplayName>Azure Active Directory</DisplayName>
+			<TechnicalProfiles>
+				<!--Demo: This technical profile write the new sign-in name to the 
+					user account in the directory	-->
+				<TechnicalProfile Id="AAD-UserWriteEmailUsingObjectId">
+					<Metadata>
+						<Item Key="Operation">Write</Item>
+						<Item Key="RaiseErrorIfClaimsPrincipalAlreadyExists">false</Item>
+						<Item Key="RaiseErrorIfClaimsPrincipalDoesNotExist">true</Item>
+					</Metadata>
+					<IncludeInSso>false</IncludeInSso>
+					<InputClaims>
+						<InputClaim ClaimTypeReferenceId="objectId" Required="true" />
+					</InputClaims>
+					<PersistedClaims>
+						<PersistedClaim ClaimTypeReferenceId="objectId" />
+						<!-- Demo: Persist the email address to the user's profile-->
+						<PersistedClaim ClaimTypeReferenceId="email" PartnerClaimType="signInNames.emailAddress" />
+					</PersistedClaims>
+					<IncludeTechnicalProfile ReferenceId="AAD-Common" />
+				</TechnicalProfile>
+			</TechnicalProfiles>
+		</ClaimsProvider>
+
+
+
+    <ClaimsProvider>
+      <DisplayName>Azure Active Directory Store</DisplayName>
+      <TechnicalProfiles>
+        <TechnicalProfile Id="AAD-Common">
+          <DisplayName>Azure Active Directory</DisplayName>
+          <!--  Demo action required: Provide objectId and appId before using extension properties.
+                For more information: https://docs.microsoft.com/en-us/azure/active-directory-b2c/active-directory-b2c-create-custom-attributes-profile-edit-custom 
+                Action required: Insert objectId and appId here -->
+          <Metadata>
+            <Item Key="ApplicationObjectId">448bba10-804b-4ddd-9e8f-c20beedf8c16</Item>
+            <Item Key="ClientId">be2e0dcd-b3e5-4584-b9ba-d0557e53ae46</Item>
+          </Metadata>
+        </TechnicalProfile>
+        <!-- Demo: The following technical profile updates the verification app for a user, identified by the object identifier for the user,
+             in the Azure Active Directory identity store. An error is raised if the user does not exist. -->
+        <TechnicalProfile Id="AAD-WriteUserAppCodeByObjectId">
+          <Metadata>
+            <Item Key="Operation">Write</Item>
+            <Item Key="RaiseErrorIfClaimsPrincipalDoesNotExist">true</Item>
+          </Metadata>
+          <IncludeInSso>false</IncludeInSso>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="objectId" Required="true" />
+          </InputClaims>
+          <PersistedClaims>
+            <PersistedClaim ClaimTypeReferenceId="objectId" />
+            <PersistedClaim ClaimTypeReferenceId="extension_WebAuthNRegistered" DefaultValue="registered"/>
+          </PersistedClaims>
+          <IncludeTechnicalProfile ReferenceId="AAD-Common" />
+        </TechnicalProfile>
+        <!-- Demo: The following technical profile is used to read data after user authenticates.
+        We overwrite existing technical profile defined in the base policy. Adding AppFactor output claims-->
+        <TechnicalProfile Id="AAD-UserReadUsingObjectId">
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="extension_WebAuthNRegistered"/>
+          </OutputClaims>
+        </TechnicalProfile>
+      </TechnicalProfiles>
+    </ClaimsProvider>
+
+
+		<ClaimsProvider>
+			<DisplayName>Self Asserted Social</DisplayName>
+			<TechnicalProfiles>
+				<!--Demo: This technical profile collects, validates and 
+					call AAD-UserWriteEmailUsingObjectId technical profile to persist the 
+					data to Azure Active Directory account-->
+				<TechnicalProfile Id="SelfAsserted-EmailUpdate">
+					<DisplayName>Email update</DisplayName>
+					<Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+					<Metadata>
+						<Item Key="ContentDefinitionReferenceId">api.selfasserted.profileupdate</Item>
+					</Metadata>
+					<IncludeInSso>false</IncludeInSso>
+					<InputClaims>
+						<InputClaim ClaimTypeReferenceId="alternativeSecurityId" />
+						<InputClaim ClaimTypeReferenceId="userPrincipalName" />
+					</InputClaims>
+					<OutputClaims>
+						<!-- Demo: Collect and validate the email address -->
+						<OutputClaim ClaimTypeReferenceId="executed-SelfAsserted-Input" DefaultValue="true" />
+						<OutputClaim ClaimTypeReferenceId="email" PartnerClaimType="Verified.Email" Required="true" />
+					</OutputClaims>
+					<ValidationTechnicalProfiles>
+						<!-- Demo: call validation technical profile to persist the data-->
+						<ValidationTechnicalProfile ReferenceId="AAD-UserWriteEmailUsingObjectId" />
+					</ValidationTechnicalProfiles>
+				</TechnicalProfile>
+			</TechnicalProfiles>
+		</ClaimsProvider>
+
+
+    <!-- AJB FIDO WebAuthN -->
+    <ClaimsProvider>
+      <DisplayName>FIDO WebAuthN REST API</DisplayName>
+      <TechnicalProfiles>
+        <TechnicalProfile Id="FIDO-RegisterAPI">
+          <DisplayName>Generate FIDO WebAuthN Register Challenge</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+          <Metadata>
+            <Item Key="ServiceUrl">https://fidowebauthnpoc.azurewebsites.net/AccountAPI/FidoRegister</Item>
+            <!--
+            <Item Key="ServiceUrl">https://fidowebauthnpoc.azurewebsites.net/AccountAPI/FidoRegister</Item>    
+            <Item Key="ServiceUrl">https://45fc3c68.ngrok.io/AccountAPI/FidoRegister</Item>    
+            -->
+            <Item Key="AuthenticationType">None</Item>
+            <Item Key="SendClaimsIn">Body</Item>
+          </Metadata>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="email" PartnerClaimType="Username" />
+          </InputClaims>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="fidoUsername" PartnerClaimType="username" />
+            <OutputClaim ClaimTypeReferenceId="fidoChallenge" PartnerClaimType="challenge" />
+            <OutputClaim ClaimTypeReferenceId="fidoRelyingPartyId" PartnerClaimType="relyingPartyId" />
+          </OutputClaims>
+          <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
+        </TechnicalProfile>
+
+        <TechnicalProfile Id="FIDO-RegisterCallbackAPI">
+          <DisplayName>Verify FIDO WebAuthN Registration</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+          <Metadata>
+            <Item Key="ServiceUrl">https://fidowebauthnpoc.azurewebsites.net/AccountAPI/RegisterCallbackJSON</Item>
+            <!--
+            <Item Key="ServiceUrl">https://fidowebauthnpoc.azurewebsites.net/AccountAPI/RegisterCallbackJSON</Item>
+            <Item Key="ServiceUrl">https://45fc3c68.ngrok.io/AccountAPI/RegisterCallbackJSON</Item>
+            -->
+            <Item Key="AuthenticationType">None</Item>
+            <Item Key="SendClaimsIn">Body</Item>
+          </Metadata>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="fidoRegisterCallbackJSON" PartnerClaimType="callback" />
+          </InputClaims>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="email" PartnerClaimType="Username" />
+            <OutputClaim ClaimTypeReferenceId="extension_WebAuthNRegistered" DefaultValue="newly-enrolled"/>
+          </OutputClaims>
+          <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
+        </TechnicalProfile>
+
+        <TechnicalProfile Id="FIDO-LoginAPI">
+          <DisplayName>Generate FIDO WebAuthN Login Challenge</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+          <Metadata>
+            <Item Key="ServiceUrl">https://fidowebauthnpoc.azurewebsites.net/AccountAPI/FidoLogin</Item>
+            <!--
+            <Item Key="ServiceUrl">https://fidowebauthnpoc.azurewebsites.net/AccountAPI/FidoLogin</Item>
+            <Item Key="ServiceUrl">https://45fc3c68.ngrok.io/AccountAPI/FidoLogin</Item>
+            -->    
+            <Item Key="AuthenticationType">None</Item>
+            <Item Key="SendClaimsIn">Body</Item>
+          </Metadata>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="email" PartnerClaimType="Username" />
+          </InputClaims>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="fidoChallenge" PartnerClaimType="challenge" />
+            <OutputClaim ClaimTypeReferenceId="fidoRelyingPartyId" PartnerClaimType="relyingPartyId" />
+            <OutputClaim ClaimTypeReferenceId="fidoKeyId" PartnerClaimType="keyId" />
+          </OutputClaims>
+          <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
+        </TechnicalProfile>
+        <TechnicalProfile Id="FIDO-LoginCallbackAPI">
+          <DisplayName>Verify FIDO Login Callback</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+          <Metadata>
+            <Item Key="ServiceUrl">https://fidowebauthnpoc.azurewebsites.net/AccountAPI/LoginCallbackJSON</Item>
+            <!--
+            <Item Key="ServiceUrl">https://fidowebauthnpoc.azurewebsites.net/AccountAPI/LoginCallbackJSON</Item>
+            <Item Key="ServiceUrl">https://45fc3c68.ngrok.io/AccountAPI/LoginCallbackJSON</Item>
+            -->
+            <Item Key="AuthenticationType">None</Item>
+            <Item Key="SendClaimsIn">Body</Item>
+          </Metadata>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="fidoLoginCallbackJSON" PartnerClaimType="callback" />
+          </InputClaims>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="email" PartnerClaimType="Username" />
+          </OutputClaims>
+          <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
+        </TechnicalProfile>
+      </TechnicalProfiles>
+    </ClaimsProvider>
+
+    <ClaimsProvider>
+      <DisplayName>FIDO WebAuthN Self Asserted</DisplayName>
+      <TechnicalProfiles>
+        <!-- Demo: The following technical profile registers a verification phone. -->
+        <TechnicalProfile Id="Fido-Register">
+          <DisplayName>FIDO Register</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+          <Metadata>
+            <Item Key="ContentDefinitionReferenceId">api.selfasserted.fido.registration</Item>            
+          </Metadata>
+          <CryptographicKeys>
+            <Key Id="issuer_secret" StorageReferenceId="B2C_1A_TokenSigningKeyContainer" />
+          </CryptographicKeys>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="fidoUsername" />
+            <InputClaim ClaimTypeReferenceId="fidoChallenge" />
+            <InputClaim ClaimTypeReferenceId="fidoRelyingPartyId" />
+          </InputClaims>
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="fidoUsername" />
+            <OutputClaim ClaimTypeReferenceId="fidoChallenge" />
+            <OutputClaim ClaimTypeReferenceId="fidoRelyingPartyId" />
+            <OutputClaim ClaimTypeReferenceId="fidoRegisterCallbackJSON" />
+          </OutputClaims>
+          <ValidationTechnicalProfiles>
+            <ValidationTechnicalProfile ReferenceId="FIDO-RegisterCallbackAPI" />
+          </ValidationTechnicalProfiles>          
+        </TechnicalProfile>
+
+        <TechnicalProfile Id="Fido-Login">
+          <DisplayName>FIDO Login</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+          <Metadata>
+            <Item Key="ContentDefinitionReferenceId">api.selfasserted.fido.login</Item>
+          </Metadata>
+          <CryptographicKeys>
+            <Key Id="issuer_secret" StorageReferenceId="B2C_1A_TokenSigningKeyContainer" />
+          </CryptographicKeys>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="fidoChallenge" />
+            <InputClaim ClaimTypeReferenceId="fidoRelyingPartyId" />
+            <InputClaim ClaimTypeReferenceId="fidoKeyId" />
+          </InputClaims>
+          <OutputClaims>            
+            <OutputClaim ClaimTypeReferenceId="fidoChallenge" />
+            <OutputClaim ClaimTypeReferenceId="fidoRelyingPartyId" />
+            <OutputClaim ClaimTypeReferenceId="fidoKeyId" />
+            <OutputClaim ClaimTypeReferenceId="fidoLoginCallbackJSON" />
+          </OutputClaims>
+          <ValidationTechnicalProfiles>
+            <ValidationTechnicalProfile ReferenceId="FIDO-LoginCallbackAPI" />
+          </ValidationTechnicalProfiles>
+        </TechnicalProfile>
+
+        <TechnicalProfile Id="Fido-GetUsername">
+          <DisplayName>FIDO Login</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+          <Metadata>
+            <Item Key="ContentDefinitionReferenceId">api.selfasserted</Item>
+          </Metadata>
+          <CryptographicKeys>
+            <Key Id="issuer_secret" StorageReferenceId="B2C_1A_TokenSigningKeyContainer" />
+          </CryptographicKeys>
+          <InputClaims>
+            <InputClaim ClaimTypeReferenceId="email" PartnerClaimType="Username" />
+          </InputClaims>
+          <OutputClaims>            
+            <OutputClaim ClaimTypeReferenceId="email" PartnerClaimType="Username" />
+            <OutputClaim ClaimTypeReferenceId="authenticationSource" DefaultValue="socialIdpAuthentication" />
+          </OutputClaims>
+          <EnabledForUserJourneys>true</EnabledForUserJourneys>
+        </TechnicalProfile>
+      </TechnicalProfiles>
+    </ClaimsProvider>
+
+  </ClaimsProviders>
+
+  <UserJourneys>
+
+    <UserJourney Id="SignUpOrSignIn">
+      <OrchestrationSteps>
+      
+        <OrchestrationStep Order="1" Type="CombinedSignInAndSignUp" ContentDefinitionReferenceId="api.signuporsignin">
+          <ClaimsProviderSelections>
+            <ClaimsProviderSelection TargetClaimsExchangeId="GoogleAccountExchange" />
+            <ClaimsProviderSelection ValidationClaimsExchangeId="LocalAccountSigninEmailExchange" />
+          </ClaimsProviderSelections>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="LocalAccountSigninEmailExchange" TechnicalProfileReferenceId="SelfAsserted-LocalAccountSignin-Email" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+
+        <!-- Check if the user has selected to sign in using one of the social providers -->
+        <OrchestrationStep Order="2" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+              <Value>objectId</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="GoogleAccountExchange" TechnicalProfileReferenceId="IDP-Google-OAUTH" />
+            <ClaimsExchange Id="SignUpWithLogonEmailExchange" TechnicalProfileReferenceId="LocalAccountSignUpWithLogonEmail" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+
+        <!-- For social IDP authentication, attempt to find the user account in the directory. -->
+        <OrchestrationStep Order="3" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+              <Value>authenticationSource</Value>
+              <Value>localAccountAuthentication</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="AADUserReadUsingAlternativeSecurityId" TechnicalProfileReferenceId="AAD-UserReadUsingAlternativeSecurityId-NoError" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+
+        <!-- Show self-asserted page only if the directory does not have the user account already (i.e. we do not have an objectId). 
+          This can only happen when authentication happened using a social IDP. If local account was created or authentication done
+          using ESTS in step 2, then an user account must exist in the directory by this time. -->
+        <OrchestrationStep Order="4" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+              <Value>objectId</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="SelfAsserted-Social" TechnicalProfileReferenceId="SelfAsserted-Social" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+
+        <!-- This step reads any user attributes that we may not have received when authenticating using ESTS so they can be sent 
+          in the token. -->
+        <OrchestrationStep Order="5" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+              <Value>authenticationSource</Value>
+              <Value>socialIdpAuthentication</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="AADUserReadWithObjectId" TechnicalProfileReferenceId="AAD-UserReadUsingObjectId" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <!-- The previous step (SelfAsserted-Social) could have been skipped if there were no attributes to collect 
+             from the user. So, in that case, create the user in the directory if one does not already exist 
+             (verified using objectId which would be set from the last step if account was created in the directory. -->
+        <OrchestrationStep Order="6" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+              <Value>objectId</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="AADUserWrite" TechnicalProfileReferenceId="AAD-UserWriteUsingAlternativeSecurityId" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+  
+        <!-- Phone verification: If MFA is not required, the next three steps (#5-#7) should be removed.
+             This step checks whether there's a phone number on record,  for the user. If found, then the user is challenged to verify it. -->
+        <OrchestrationStep Order="7" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
+              <Value>isActiveMFASession</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="PhoneFactor-Verify" TechnicalProfileReferenceId="PhoneFactor-InputOrVerify" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+
+        <!-- Save MFA phone number: The precondition verifies whether the user provided a new number in the 
+             previous step. If so, then the phone number is stored in the directory for future authentication 
+             requests. -->
+        <OrchestrationStep Order="8" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
+              <Value>newPhoneNumberEntered</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="AADUserWriteWithObjectId" TechnicalProfileReferenceId="AAD-UserWritePhoneNumberUsingObjectId" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <OrchestrationStep Order="9" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
+
+      </OrchestrationSteps>
+      <ClientDefinition ReferenceId="DefaultWeb" />
+    </UserJourney>
+
+
+    <UserJourney Id="ProfileEdit">
+      <OrchestrationSteps>
+
+        <OrchestrationStep Order="1" Type="ClaimsProviderSelection" ContentDefinitionReferenceId="api.idpselections">
+          <ClaimsProviderSelections>
+            <ClaimsProviderSelection TargetClaimsExchangeId="GoogleAccountExchange" />
+            <ClaimsProviderSelection TargetClaimsExchangeId="LocalAccountSigninEmailExchange" />
+          </ClaimsProviderSelections>
+        </OrchestrationStep>
+        <OrchestrationStep Order="2" Type="ClaimsExchange">
+          <ClaimsExchanges>
+            <ClaimsExchange Id="GoogleAccountExchange" TechnicalProfileReferenceId="IDP-Google-OAUTH" />
+            <ClaimsExchange Id="LocalAccountSigninEmailExchange" TechnicalProfileReferenceId="SelfAsserted-LocalAccountSignin-Email" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <OrchestrationStep Order="3" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+              <Value>authenticationSource</Value>
+              <Value>localAccountAuthentication</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="AADUserRead" TechnicalProfileReferenceId="AAD-UserReadUsingAlternativeSecurityId" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <OrchestrationStep Order="4" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+              <Value>authenticationSource</Value>
+              <Value>socialIdpAuthentication</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="AADUserReadWithObjectId" TechnicalProfileReferenceId="AAD-UserReadUsingObjectId" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+  
+        <!-- If the user ever stepped up to use 2FA, profile update must verify this because the user will be able to change
+          their sign in email address or strong authentication email here. This guards against scenarios where a user's 
+          password is stolen, the attacker can change the email addresses leaving no way for the user to recover their account.
+          By requiring 2FA, stolen passwords cannot be used to take over the account completely. -->
+        <OrchestrationStep Order="5" Type="ClaimsExchange">
+          <ClaimsExchanges>
+            <ClaimsExchange Id="PhoneFactor" TechnicalProfileReferenceId="PhoneFactor-InputOrVerify" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <OrchestrationStep Order="6" Type="ClaimsExchange">
+          <ClaimsExchanges>
+            <ClaimsExchange Id="B2CUserProfileUpdateExchange" TechnicalProfileReferenceId="SelfAsserted-ProfileUpdate" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <OrchestrationStep Order="7" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
+
+      </OrchestrationSteps>
+      <ClientDefinition ReferenceId="DefaultWeb" />
+    </UserJourney>
+ 
+    <UserJourney Id="PasswordReset">
+      <OrchestrationSteps>
+        <OrchestrationStep Order="1" Type="ClaimsExchange">
+          <ClaimsExchanges>
+            <ClaimsExchange Id="PasswordResetUsingEmailAddressExchange" TechnicalProfileReferenceId="LocalAccountDiscoveryUsingEmailAddress" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <OrchestrationStep Order="2" Type="ClaimsExchange">
+          <ClaimsExchanges>
+            <ClaimsExchange Id="PhoneFactor-Verify" TechnicalProfileReferenceId="PhoneFactor-InputOrVerify" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <OrchestrationStep Order="3" Type="ClaimsExchange">
+          <ClaimsExchanges>
+            <ClaimsExchange Id="NewCredentials" TechnicalProfileReferenceId="LocalAccountWritePasswordUsingObjectId" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <OrchestrationStep Order="4" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
+      </OrchestrationSteps>
+      <ClientDefinition ReferenceId="DefaultWeb" />
+    </UserJourney>
+
+    <UserJourney Id="ChangeSignInName">
+			<OrchestrationSteps>
+				<!-- Demo: To change the sign-in names, user need to sign-in with 
+				local account only -->
+				<OrchestrationStep Order="1" Type="ClaimsProviderSelection" ContentDefinitionReferenceId="api.idpselections">
+					<ClaimsProviderSelections>
+						<ClaimsProviderSelection TargetClaimsExchangeId="LocalAccountSigninEmailExchange" />
+					</ClaimsProviderSelections>
+				</OrchestrationStep>
+
+				<!--Demo: Sign-in user with local account-->
+				<OrchestrationStep Order="2" Type="ClaimsExchange">
+					<ClaimsExchanges>
+						<ClaimsExchange Id="LocalAccountSigninEmailExchange" TechnicalProfileReferenceId="SelfAsserted-LocalAccountSignin-Email" />
+					</ClaimsExchanges>
+				</OrchestrationStep>
+
+				<!--Demo: Read the user data from the Azure Active Directory -->
+				<OrchestrationStep Order="3" Type="ClaimsExchange">
+					<Preconditions>
+						<Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+							<Value>authenticationSource</Value>
+							<Value>socialIdpAuthentication</Value>
+							<Action>SkipThisOrchestrationStep</Action>
+						</Precondition>
+					</Preconditions>
+					<ClaimsExchanges>
+						<ClaimsExchange Id="AADUserReadWithObjectId" TechnicalProfileReferenceId="AAD-UserReadUsingObjectId" />
+					</ClaimsExchanges>
+				</OrchestrationStep>
+
+				<!-- Demo: this self asserted technical profile validates and 
+					update the sing-in name -->
+				<OrchestrationStep Order="4" Type="ClaimsExchange">
+					<ClaimsExchanges>
+						<ClaimsExchange Id="B2CUserProfileUpdateExchange" TechnicalProfileReferenceId="SelfAsserted-EmailUpdate" />
+					</ClaimsExchanges>
+				</OrchestrationStep>
+
+				<OrchestrationStep Order="5" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
+
+			</OrchestrationSteps>
+			<ClientDefinition ReferenceId="DefaultWeb" />
+		</UserJourney>
+
+    <!-- AJB FIDO -->
+    <UserJourney Id="SignUpOrSignInFIDO">
+      <OrchestrationSteps>
+        <!-- <OrchestrationStep Order="1" Type="CombinedSignInAndSignUp" ContentDefinitionReferenceId="api.signuporsignin"> -->
+        <OrchestrationStep Order="1" Type="CombinedSignInAndSignUp" ContentDefinitionReferenceId="api.fido.signuporsignin">
+          <ClaimsProviderSelections>
+            <ClaimsProviderSelection ValidationClaimsExchangeId="LocalAccountSigninEmailExchange" />            
+            <ClaimsProviderSelection TargetClaimsExchangeId="GoogleAccountExchange" />
+          </ClaimsProviderSelections>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="LocalAccountSigninEmailExchange" TechnicalProfileReferenceId="SelfAsserted-LocalAccountSignin-Email" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <!-- Check if the user has selected to sign in using one of the social providers -->
+        <OrchestrationStep Order="2" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+              <Value>objectId</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="SignUpWithLogonEmailExchange" TechnicalProfileReferenceId="LocalAccountSignUpWithLogonEmail" />            
+            <ClaimsExchange Id="GoogleAccountExchange" TechnicalProfileReferenceId="IDP-Google-OAUTH" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <!-- For social IDP authentication, attempt to find the user account in the directory. -->
+        <OrchestrationStep Order="3" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+              <Value>authenticationSource</Value>
+              <Value>localAccountAuthentication</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="AADUserReadUsingAlternativeSecurityId" TechnicalProfileReferenceId="AAD-UserReadUsingAlternativeSecurityId-NoError" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <!-- Show self-asserted page only if the directory does not have the user account already (i.e. we do not have an objectId). 
+          This can only happen when authentication happened using a social IDP. If local account was created or authentication done
+          using ESTS in step 2, then an user account must exist in the directory by this time. -->
+        <OrchestrationStep Order="4" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+              <Value>objectId</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="SelfAsserted-Social" TechnicalProfileReferenceId="SelfAsserted-Social" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <!-- The previous step (SelfAsserted-Social) could have been skipped if there were no attributes to collect 
+             from the user. So, in that case, create the user in the directory if one does not already exist 
+             (verified using objectId which would be set from the last step if account was created in the directory. -->
+        <OrchestrationStep Order="5" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+              <Value>objectId</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="AADUserWrite" TechnicalProfileReferenceId="AAD-UserWriteUsingAlternativeSecurityId" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        
+        <!-- Demo: The following orchestration step is always executed. 
+         This step reads any user attributes that we may not have received when authenticating using ESTS so they 
+         include the AppCode MFA attributes
+          in the token. -->
+        <OrchestrationStep Order="6" Type="ClaimsExchange">
+          <ClaimsExchanges>
+            <ClaimsExchange Id="AADUserReadWithObjectId" TechnicalProfileReferenceId="AAD-UserReadUsingObjectId" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        
+        <!-- FIDO Register -->
+        <OrchestrationStep Order="7" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+              <Value>extension_WebAuthNRegistered</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="FIDORegisterAPI" TechnicalProfileReferenceId="FIDO-RegisterAPI" />
+          </ClaimsExchanges>
+        </OrchestrationStep>        
+        
+        <!-- Demo: The following orchestration step is executed only for unregistered 
+        It registers a verification app through QR code that mobile authentication app should scan. -->
+        <OrchestrationStep Order="8" Type="ClaimsExchange">      
+          <Preconditions>
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+              <Value>extension_WebAuthNRegistered</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="FIDORegisterExchange" TechnicalProfileReferenceId="Fido-Register" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+
+        <OrchestrationStep Order="9" Type="ClaimsExchange">
+          <ClaimsExchanges>
+            <ClaimsExchange Id="AADWriteUserAppCodeByObjectId" TechnicalProfileReferenceId="AAD-WriteUserAppCodeByObjectId" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+
+        <!-- AJB TO HERE -->
+
+        <!-- FIDO Login -->        
+        <OrchestrationStep Order="10" Type="ClaimsExchange">
+          <!--
+          <Preconditions>
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
+              <Value>extension_WebAuthNRegistered</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          -->
+          <ClaimsExchanges>
+            <ClaimsExchange Id="FIDOLoginAPI" TechnicalProfileReferenceId="FIDO-LoginAPI" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+
+        <OrchestrationStep Order="11" Type="ClaimsExchange">          
+          <Preconditions>
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
+              <Value>extension_WebAuthNRegistered</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="FIDOLoginExchange" TechnicalProfileReferenceId="Fido-Login" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+
+        <!--
+        <OrchestrationStep Order="9" Type="ClaimsExchange">
+          <ClaimsExchanges>
+            <ClaimsExchange Id="AuditLogData" TechnicalProfileReferenceId="AzureFunctions-LookUpAuditLog" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        -->
+        
+        <OrchestrationStep Order="12" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
+      </OrchestrationSteps>
+      <ClientDefinition ReferenceId="DefaultWeb" />
+    </UserJourney>
+
+    <!-- AJB FIDO -->
+    <UserJourney Id="SignUpOrSignInFIDOLogin">
+      <OrchestrationSteps>
+
+        <OrchestrationStep Order="1" Type="ClaimsExchange">
+          <ClaimsExchanges>
+            <ClaimsExchange Id="FidoGetUsername" TechnicalProfileReferenceId="Fido-GetUsername" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+      
+        <OrchestrationStep Order="2" Type="ClaimsExchange">
+          <ClaimsExchanges>
+            <ClaimsExchange Id="FIDOLoginAPI" TechnicalProfileReferenceId="FIDO-LoginAPI" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+
+        <OrchestrationStep Order="3" Type="ClaimsExchange">
+          <ClaimsExchanges>
+            <ClaimsExchange Id="FIDOLoginExchange" TechnicalProfileReferenceId="Fido-Login" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+
+<!--
+        <OrchestrationStep Order="4" Type="ClaimsExchange">
+          <ClaimsExchanges>
+            <ClaimsExchange Id="AADUserReadWithObjectId" TechnicalProfileReferenceId="AAD-UserReadUsingAlternativeSecurityId-NoError" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+-->
+
+        <OrchestrationStep Order="4" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
+      </OrchestrationSteps>
+      <ClientDefinition ReferenceId="DefaultWeb" />
+    </UserJourney>
+
+
+  </UserJourneys>
+
+
+</TrustFrameworkPolicy>
