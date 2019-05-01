@@ -17,8 +17,8 @@
   <PolicyId>B2C_1A_TrustFrameworkBase_v2</PolicyId>
 </BasePolicy>
 
- <BuildingBlocks>
-<ClaimsSchema>
+<BuildingBlocks>
+  <ClaimsSchema>
   
     <!-- FIDO WebAuthN Begin -->
     <ClaimType Id="extension_WebAuthNRegistered">
@@ -61,16 +61,8 @@
   </ClaimsSchema>
 
     <ContentDefinitions>
-      <!-- AJB FIDO WebAuthN -->
-      <ContentDefinition Id="api.idpselections">
-        <LoadUri>https://b2cdemofiles.blob.core.windows.net/b2c/SimplePage.html</LoadUri>
-        <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
-        <DataUri>urn:com:microsoft:aad:b2c:elements:contract:unifiedssp:1.0.0</DataUri>
-        <Metadata>
-          <Item Key="DisplayName">UNIFYAdvantage™ - Select Identity Provider</Item>
-          <Item Key="language.intro">Sign in</Item>
-        </Metadata>
-      </ContentDefinition>
+      <!-- AJB FIDO WebAuthN Begin -->
+
       <ContentDefinition Id="api.selfasserted.fido.registration">
         <!--<LoadUri>https://b2cdemofiles.blob.core.windows.net/b2c/SimplePageBase.html</LoadUri>-->
         <LoadUri>https://fidowebauthnpoc.azurewebsites.net/SimplePageBaseRegistration.html</LoadUri>
@@ -109,11 +101,107 @@
         <Metadata>
           <Item Key="DisplayName">UNIFYAdvantage™ - Signin</Item>
         </Metadata>
-        <!--<LocalizedResourcesReferences MergeBehavior="Prepend">
-					<LocalizedResourcesReference Language="en" Url="https://bing.com" LocalizedResourcesReferenceId="api.idpselection.signupsignin.en" />
-				</LocalizedResourcesReferences>	-->
       </ContentDefinition>
 
+      <!-- AJB FIDO WebAuthN End -->
+
+
+
+      <!-- This content definition is to render an error page that displays unhandled errors. -->
+      <ContentDefinition Id="api.error">
+        <LoadUri>https://b2cdemofiles.blob.core.windows.net/b2c/ocean_blue/exception.html</LoadUri>
+        <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+        <DataUri>urn:com:microsoft:aad:b2c:elements:globalexception:1.1.0</DataUri>
+        <Metadata>
+          <Item Key="DisplayName">Error page</Item>
+        </Metadata>
+      </ContentDefinition>
+
+      <ContentDefinition Id="api.idpselections">
+        <LoadUri>https://b2cdemofiles.blob.core.windows.net/b2c/ocean_blue/idpSelector.html</LoadUri>
+        <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+        <DataUri>urn:com:microsoft:aad:b2c:elements:idpselection:1.0.0</DataUri>
+        <Metadata>
+          <Item Key="DisplayName">Idp selection page</Item>
+          <Item Key="language.intro">Sign in</Item>
+        </Metadata>
+      </ContentDefinition>
+
+      <ContentDefinition Id="api.idpselections.signup">
+        <LoadUri>https://b2cdemofiles.blob.core.windows.net/b2c/ocean_blue/idpSelector.html</LoadUri>
+        <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+        <DataUri>urn:com:microsoft:aad:b2c:elements:idpselection:1.0.0</DataUri>
+        <Metadata>
+          <Item Key="DisplayName">Idp selection page</Item>
+          <Item Key="language.intro">Sign up</Item>
+        </Metadata>
+      </ContentDefinition>
+
+      <ContentDefinition Id="api.signuporsignin">
+        <LoadUri>https://b2cdemofiles.blob.core.windows.net/b2c/ocean_blue/unified.html</LoadUri>
+        <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+        <DataUri>urn:com:microsoft:aad:b2c:elements:unifiedssp:1.0.0</DataUri>
+        <Metadata>
+          <Item Key="DisplayName">Signin and Signup</Item>
+        </Metadata>
+      </ContentDefinition>
+
+      <ContentDefinition Id="api.phonefactor">
+        <LoadUri>https://b2cdemofiles.blob.core.windows.net/b2c/ocean_blue/multifactor-1.0.0.html</LoadUri>
+        <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+        <DataUri>urn:com:microsoft:aad:b2c:elements:multifactor:1.1.0</DataUri>
+        <Metadata>
+          <Item Key="DisplayName">Multi-factor authentication page</Item>
+        </Metadata>
+      </ContentDefinition>
+
+      <ContentDefinition Id="api.selfasserted">
+        <LoadUri>https://b2cdemofiles.blob.core.windows.net/b2c/ocean_blue/selfAsserted.html</LoadUri>
+        <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+        <DataUri>urn:com:microsoft:aad:b2c:elements:selfasserted:1.1.0</DataUri>
+        <Metadata>
+          <Item Key="DisplayName">Collect information from user page</Item>
+        </Metadata>
+      </ContentDefinition>
+
+      <ContentDefinition Id="api.selfasserted.profileupdate">
+        <LoadUri>https://b2cdemofiles.blob.core.windows.net/b2c/ocean_blue/updateProfile.html</LoadUri>
+        <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+        <DataUri>urn:com:microsoft:aad:b2c:elements:selfasserted:1.1.0</DataUri>
+        <Metadata>
+          <Item Key="DisplayName">Collect information from user page</Item>
+        </Metadata>
+      </ContentDefinition>
+
+      <ContentDefinition Id="api.localaccountsignup">
+        <LoadUri>https://b2cdemofiles.blob.core.windows.net/b2c/ocean_blue/selfAsserted.html</LoadUri>
+        <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+        <DataUri>urn:com:microsoft:aad:b2c:elements:selfasserted:1.1.0</DataUri>
+        <Metadata>
+          <Item Key="DisplayName">Local account sign up page</Item>
+        </Metadata>
+      </ContentDefinition>
+
+      <ContentDefinition Id="api.localaccountpasswordreset">
+        <LoadUri>https://b2cdemofiles.blob.core.windows.net/b2c/ocean_blue/selfAsserted.html</LoadUri>
+        <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+        <DataUri>urn:com:microsoft:aad:b2c:elements:selfasserted:1.1.0</DataUri>
+        <Metadata>
+          <Item Key="DisplayName">Local account change password page</Item>
+        </Metadata>
+      </ContentDefinition>
+
+      <!--
+      <ContentDefinition Id="api.idpselections">
+        <LoadUri>https://b2cdemofiles.blob.core.windows.net/b2c/SimplePage.html</LoadUri>
+        <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+        <DataUri>urn:com:microsoft:aad:b2c:elements:contract:unifiedssp:1.0.0</DataUri>
+        <Metadata>
+          <Item Key="DisplayName">UNIFYAdvantage™ - Select Identity Provider</Item>
+          <Item Key="language.intro">Sign in</Item>
+        </Metadata>
+      </ContentDefinition>
+      
       <ContentDefinition Id="api.localaccountsignup">
         <LoadUri>https://fidowebauthnpoc.azurewebsites.net/SimplePage.html</LoadUri>
         <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
@@ -149,15 +237,7 @@
           <Item Key="DisplayName">Local account change password page</Item>
         </Metadata>
       </ContentDefinition>
-
-      <ContentDefinition Id="api.phonefactor">
-        <LoadUri>~/tenant/default/multifactor-1.0.0.cshtml</LoadUri>
-        <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
-        <DataUri>urn:com:microsoft:aad:b2c:elements:contract:multifactor:1.1.0</DataUri>
-        <Metadata>
-          <Item Key="DisplayName">Multi-factor authentication page</Item>
-        </Metadata>
-      </ContentDefinition>
+      -->
 
     </ContentDefinitions>
 
@@ -273,8 +353,6 @@
 			</TechnicalProfiles>
 		</ClaimsProvider>
 
-
-
     <ClaimsProvider>
       <DisplayName>Azure Active Directory Store</DisplayName>
       <TechnicalProfiles>
@@ -315,7 +393,6 @@
       </TechnicalProfiles>
     </ClaimsProvider>
 
-
 		<ClaimsProvider>
 			<DisplayName>Self Asserted Social</DisplayName>
 			<TechnicalProfiles>
@@ -345,7 +422,6 @@
 				</TechnicalProfile>
 			</TechnicalProfiles>
 		</ClaimsProvider>
-
 
     <!-- AJB FIDO WebAuthN -->
     <ClaimsProvider>
@@ -516,6 +592,16 @@
       </TechnicalProfiles>
     </ClaimsProvider>
 
+    <ClaimsProvider>
+      <DisplayName>Local Account</DisplayName>
+      <TechnicalProfiles>
+        <TechnicalProfile Id="LocalAccountDiscoveryUsingEmailAddress-SignIn">
+          <DisplayName>Sign-In with Email</DisplayName>
+          <IncludeTechnicalProfile ReferenceId="LocalAccountDiscoveryUsingEmailAddress" />
+        </TechnicalProfile>
+      </TechnicalProfiles>
+    </ClaimsProvider>
+
   </ClaimsProviders>
 
   <UserJourneys>
@@ -527,6 +613,7 @@
           <ClaimsProviderSelections>
             <ClaimsProviderSelection TargetClaimsExchangeId="GoogleAccountExchange" />
             <ClaimsProviderSelection ValidationClaimsExchangeId="LocalAccountSigninEmailExchange" />
+            <ClaimsProviderSelection TargetClaimsExchangeId="SignIn-WithEmail" />
           </ClaimsProviderSelections>
           <ClaimsExchanges>
             <ClaimsExchange Id="LocalAccountSigninEmailExchange" TechnicalProfileReferenceId="SelfAsserted-LocalAccountSignin-Email" />
@@ -544,6 +631,7 @@
           <ClaimsExchanges>
             <ClaimsExchange Id="GoogleAccountExchange" TechnicalProfileReferenceId="IDP-Google-OAUTH" />
             <ClaimsExchange Id="SignUpWithLogonEmailExchange" TechnicalProfileReferenceId="LocalAccountSignUpWithLogonEmail" />
+            <ClaimsExchange Id="SignIn-WithEmail" TechnicalProfileReferenceId="LocalAccountDiscoveryUsingEmailAddress-SignIn" />
           </ClaimsExchanges>
         </OrchestrationStep>
 
@@ -609,7 +697,7 @@
              This step checks whether there's a phone number on record,  for the user. If found, then the user is challenged to verify it. -->
         <OrchestrationStep Order="7" Type="ClaimsExchange">
           <Preconditions>
-            <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
               <Value>isActiveMFASession</Value>
               <Action>SkipThisOrchestrationStep</Action>
             </Precondition>
@@ -638,7 +726,6 @@
       </OrchestrationSteps>
       <ClientDefinition ReferenceId="DefaultWeb" />
     </UserJourney>
-
 
     <UserJourney Id="ProfileEdit">
       <OrchestrationSteps>
@@ -951,6 +1038,100 @@
 -->
 
         <OrchestrationStep Order="4" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
+      </OrchestrationSteps>
+      <ClientDefinition ReferenceId="DefaultWeb" />
+    </UserJourney>
+
+    <!-- AJB Mobile  -->
+    <UserJourney Id="SignUpOrSignInMobile">
+      <OrchestrationSteps>
+      
+        <OrchestrationStep Order="1" Type="CombinedSignInAndSignUp" ContentDefinitionReferenceId="api.signuporsignin">
+          <ClaimsProviderSelections>
+            <ClaimsProviderSelection TargetClaimsExchangeId="GoogleAccountExchange" />
+            <ClaimsProviderSelection ValidationClaimsExchangeId="LocalAccountSigninEmailExchange" />
+            <ClaimsProviderSelection TargetClaimsExchangeId="SignIn-WithEmail" />
+          </ClaimsProviderSelections>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="LocalAccountSigninEmailExchange" TechnicalProfileReferenceId="SelfAsserted-LocalAccountSignin-Email" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+
+        <!-- Check if the user has selected to sign in using one of the social providers -->
+        <OrchestrationStep Order="2" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+              <Value>objectId</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="GoogleAccountExchange" TechnicalProfileReferenceId="IDP-Google-OAUTH" />
+            <ClaimsExchange Id="SignUpWithLogonEmailExchange" TechnicalProfileReferenceId="LocalAccountSignUpWithLogonEmail" />
+            <ClaimsExchange Id="SignIn-WithEmail" TechnicalProfileReferenceId="LocalAccountDiscoveryUsingEmailAddress-SignIn" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+
+        <!-- For social IDP authentication, attempt to find the user account in the directory. -->
+        <OrchestrationStep Order="3" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+              <Value>authenticationSource</Value>
+              <Value>localAccountAuthentication</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="AADUserReadUsingAlternativeSecurityId" TechnicalProfileReferenceId="AAD-UserReadUsingAlternativeSecurityId-NoError" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+
+        <!-- Show self-asserted page only if the directory does not have the user account already (i.e. we do not have an objectId). 
+          This can only happen when authentication happened using a social IDP. If local account was created or authentication done
+          using ESTS in step 2, then an user account must exist in the directory by this time. -->
+        <OrchestrationStep Order="4" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+              <Value>objectId</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="SelfAsserted-Social" TechnicalProfileReferenceId="SelfAsserted-Social" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+
+        <!-- This step reads any user attributes that we may not have received when authenticating using ESTS so they can be sent 
+          in the token. -->
+        <OrchestrationStep Order="5" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+              <Value>authenticationSource</Value>
+              <Value>socialIdpAuthentication</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="AADUserReadWithObjectId" TechnicalProfileReferenceId="AAD-UserReadUsingObjectId" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <!-- The previous step (SelfAsserted-Social) could have been skipped if there were no attributes to collect 
+             from the user. So, in that case, create the user in the directory if one does not already exist 
+             (verified using objectId which would be set from the last step if account was created in the directory. -->
+        <OrchestrationStep Order="6" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+              <Value>objectId</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="AADUserWrite" TechnicalProfileReferenceId="AAD-UserWriteUsingAlternativeSecurityId" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+  
+        <OrchestrationStep Order="7" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
+
       </OrchestrationSteps>
       <ClientDefinition ReferenceId="DefaultWeb" />
     </UserJourney>
