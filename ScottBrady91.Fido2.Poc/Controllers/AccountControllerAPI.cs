@@ -31,9 +31,8 @@ namespace ScottBrady91.Fido2.Poc.Controllers
     public class AccountAPIController : Controller
     {
         // aka RP ID
-        private const string RelyingPartyId = "fidowebauthnpoc.azurewebsites.net";
+        private const string RelyingPartyId = "ngrok.io";
 
-        private static readonly List<User> Users = new List<User>();
         private readonly ITempDataProvider tempData;
         private readonly AppSettingsModel AppSettings;
         private IMemoryCache cache;
@@ -234,14 +233,18 @@ namespace ScottBrady91.Fido2.Poc.Controllers
                     }
                 }
             }
+            else
+            {
+                _Users = new List<User>();
+            }
 
             // 18. If the attestation statement attStmt verified successfully and is found to be trustworthy, then register the new credential
             var coseStruct = CBORObject.DecodeFromBytes(span.ToArray());
             var key = JsonConvert.DeserializeObject<CredentialPublicKey>(coseStruct.ToJSONString());
 
             Models.User user = new User { Username = (string)data["username"], CredentialId = parsedCredentialId, PublicKey = key };
-            Users.Add(user);
-            cache.Set("Users", Users);
+            _Users.Add(user);
+            cache.Set("Users", _Users);
 
             return new B2CResponseModel("User registered successfully", System.Net.HttpStatusCode.OK);
         }
@@ -355,8 +358,8 @@ namespace ScottBrady91.Fido2.Poc.Controllers
             var key = JsonConvert.DeserializeObject<CredentialPublicKey>(coseStruct.ToJSONString());
 
             Models.User user = new User { Username = (string)data["username"], CredentialId = parsedCredentialId, PublicKey = key };
-            Users.Add(user);
-            cache.Set("Users", Users);
+            _Users.Add(user);
+            cache.Set("Users", _Users);
 
             return new B2CResponseModel("User registered successfully", System.Net.HttpStatusCode.OK);
         }
@@ -396,7 +399,7 @@ namespace ScottBrady91.Fido2.Poc.Controllers
             var challenge = CryptoRandom.CreateUniqueId(16);
 
             List<User> _Users = (List<User>)cache.Get("Users");
-            var user = Users.First(x => x.Username == inputClaims.Username);
+            var user = _Users.First(x => x.Username == inputClaims.Username);
 
             // store challenge & key ID for later use
             tempData.SaveTempData(HttpContext, new Dictionary<string, object> { { "challenge", challenge }, { "keyId", user.CredentialId }, { "returnUrl", inputClaims.ReturnUrl } });
@@ -422,8 +425,9 @@ namespace ScottBrady91.Fido2.Poc.Controllers
             tempData.SaveTempData(HttpContext,
                 new Dictionary<string, object> { { "challenge", challenge } });
 
+            List<User> _Users = (List<User>)cache.Get("Users");
             List<PublicKey> publicKeys = new List<PublicKey>();
-            foreach (User user in Users)
+            foreach (User user in _Users)
             {
                 publicKeys.Add(new PublicKey(user.CredentialId));
             }
@@ -493,7 +497,7 @@ namespace ScottBrady91.Fido2.Poc.Controllers
             if ((string)data["keyId"] != model.RawId) throw new Exception("Incorrect key used");
 
             List<User> _Users = (List<User>)cache.Get("Users");
-            var user = Users.First(x => x.CredentialId == model.RawId);
+            var user = _Users.First(x => x.CredentialId == model.RawId);
             if (!string.IsNullOrEmpty(model.Response.UserHandle) && model.Response.UserHandle != user.Username) throw new Exception("Incorrect user handle returned");
 
             // 7. Verify that the value of C.type is the string webauthn.get.
@@ -603,7 +607,7 @@ namespace ScottBrady91.Fido2.Poc.Controllers
             if ((string)data["keyId"] != model.RawId) throw new Exception("Incorrect key used");
 
             List<User> _Users = (List<User>)cache.Get("Users");
-            var user = Users.First(x => x.CredentialId == model.RawId);
+            var user = _Users.First(x => x.CredentialId == model.RawId);
             if (!string.IsNullOrEmpty(model.Response.UserHandle) && model.Response.UserHandle != user.Username) throw new Exception("Incorrect user handle returned");
 
             // 7. Verify that the value of C.type is the string webauthn.get.
@@ -703,7 +707,7 @@ namespace ScottBrady91.Fido2.Poc.Controllers
             */
 
             List<User> _Users = (List<User>)cache.Get("Users");
-            if (Users.Any(x => x.Username == Username))
+            if (_Users.Any(x => x.Username == Username))
             {
                 return _Users.Find(x => x.Username == Username);
             }
@@ -713,8 +717,9 @@ namespace ScottBrady91.Fido2.Poc.Controllers
 
         [HttpGet("/AccountAPI/GetUsers")]
         public IActionResult GetUsers([FromForm] UsernameModel model)
-        {        
-            return Ok(Users);
+        {
+            List<User> _Users = (List<User>)cache.Get("Users");
+            return Ok(_Users);
         }
 
         [HttpGet("/AccountAPI/DeleteUsers")]
@@ -722,7 +727,7 @@ namespace ScottBrady91.Fido2.Poc.Controllers
         {
             cache.Set("Users", new List<User>());
             List<User> _Users = (List<User>)cache.Get("Users");
-            return Ok(Users);
+            return Ok(_Users);
         }
 
         private byte[] DeserializeSignature(string signature)

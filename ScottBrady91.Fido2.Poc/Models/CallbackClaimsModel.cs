@@ -17,7 +17,10 @@ namespace ScottBrady91.Fido2.Poc.Models
 
         public static CallbackClaimsModel Parse(string JSON)
         {
-            return JsonConvert.DeserializeObject(JSON, typeof(CallbackClaimsModel)) as CallbackClaimsModel;
+            var ccmnew = JsonConvert.DeserializeObject(JSON, typeof(CallbackClaimsModel));
+
+            CallbackClaimsModel ccm = JsonConvert.DeserializeObject(JSON, typeof(CallbackClaimsModel)) as CallbackClaimsModel;
+            return ccm;
         }
     }
 }

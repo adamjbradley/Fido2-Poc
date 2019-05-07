@@ -646,18 +646,25 @@
         var challenge = urlParams.get('challenge');
         var relyingPartyId = urlParams.get('relyingPartyId');
 
-        var json = null;
-        //jQuery.ajax({
-        //    url: 'https://fidowebauthnpoc.azurewebsites.net/api/AccountAPI/FidoRegister?username=' + username,
-        //    success: function (result) {
-        //        if (result.isOk == false) alert(result.message);
-        //        var stringified = JSON.stringify(result);
-        //        json = JSON.parse(stringified);
-        //    },
-        //    async: false
-        //});
+        var request = {
+            Username: username
+        }
 
-        var byteCharacters = atob(challenge);
+        var json = null;
+        jQuery.ajax({
+            url: 'https://a730fd4f.ngrok.io/AccountAPI/FidoRegister?username=' + username,
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(request),
+            success: function (result) {
+                if (result.isOk == false) alert(result.message);
+                var stringified = JSON.stringify(result);
+                json = JSON.parse(stringified);
+            },
+            async: false
+        });
+
+        var byteCharacters = atob(json.challenge);
         var byteNumbers = new Array(byteCharacters.length);
         for (var i = 0; i < byteCharacters.length; i++) {
             byteNumbers[i] = byteCharacters.charCodeAt(i);
@@ -715,23 +722,32 @@
 
                 return pubKeyCred;
             }
-            
+
             var credentialsAsJson = publicKeyCredentialToJSON(credentials);
             console.log(credentialsAsJson);
 
             var credentialsAsJsonString = btoa(JSON.stringify(credentialsAsJson));
-            console.log(credentialsAsJsonString);                                            
+            console.log(credentialsAsJsonString);
+
+            var response = {
+                callback: credentialsAsJsonString
+            };
+
+            console.log(response);
+
+            var finalresponse = JSON.stringify(response);
 
             $.ajax({
-                url: 'https://28f5d715.ngrok.io/AccountAPI/RegisterCallbackJSON',
+                url: 'https://a730fd4f.ngrok.io/AccountAPI/RegisterCallbackJSON',
                 type: 'POST',
                 contentType: 'application/json',
-                data: credentialsAsJsonString,
+                data: finalresponse,
                 success: function (result) {
                     console.log(result);
                     alert("Successfully registered " + username);
                 }
             });
         });</script>
+
 </body>
 </html>
